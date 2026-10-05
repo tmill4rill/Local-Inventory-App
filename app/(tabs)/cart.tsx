@@ -6,7 +6,7 @@ import { Button, Card, Empty, ProductArt } from '../../src/components/ui';
 import { getProduct, SHIPPING_FEE } from '../../src/data/products';
 import { getStore } from '../../src/data/stores';
 import { useApp, type CartLine } from '../../src/state/AppState';
-import { colors, money, radius, type } from '../../src/theme';
+import { colors, DOCK_SPACE, money, radius, type } from '../../src/theme';
 
 export default function Cart() {
   const { cart, setQty, removeLine } = useApp();
@@ -20,7 +20,7 @@ export default function Cart() {
   const items = cart.reduce((n, l) => n + (getProduct(l.productId)?.price ?? 0) * l.qty, 0);
   const shipping = cart.some((l) => l.fulfillment.type === 'ship') ? SHIPPING_FEE : 0;
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}>
+    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: DOCK_SPACE, gap: 12 }}>
       {cart.map((line) => (
         <Line key={line.id} line={line} onQty={(q) => setQty(line.id, q)} onRemove={() => removeLine(line.id)} />
       ))}
@@ -54,7 +54,7 @@ function Line({ line, onQty, onRemove }: { line: CartLine; onQty: (q: number) =>
             <Pressable testID={`dec-${line.id}`} accessibilityLabel="Decrease quantity" onPress={() => onQty(line.qty - 1)} style={styles.stepBtn}>
               <Ionicons name={line.qty === 1 ? 'trash-outline' : 'remove'} size={16} color={colors.ink} />
             </Pressable>
-            <Text style={{ minWidth: 24, textAlign: 'center', fontWeight: '700' }}>{line.qty}</Text>
+            <Text style={{ minWidth: 24, textAlign: 'center', fontWeight: '700', color: colors.ink }}>{line.qty}</Text>
             <Pressable accessibilityLabel="Increase quantity" onPress={() => onQty(line.qty + 1)} style={styles.stepBtn}>
               <Ionicons name="add" size={16} color={colors.ink} />
             </Pressable>

@@ -2,14 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Badge, Button, Card, Empty, ProductArt } from '../../src/components/ui';
+import { Badge, Button, Card, Empty, PricePill, StatTrio } from '../../src/components/ui';
 import { getProduct, SHIPPING_FEE } from '../../src/data/products';
 import { STORE_TYPE_LABEL } from '../../src/data/stores';
 import { formatDistance } from '../../src/lib/geo';
 import { availabilityFor, withinRadius } from '../../src/lib/inventory';
 import { isOpenNow } from '../../src/lib/pickup';
 import { useApp } from '../../src/state/AppState';
-import { colors, money, radius, space, type } from '../../src/theme';
+import { colors, glow, money, radius, space, type } from '../../src/theme';
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,18 +36,30 @@ export default function ProductDetail() {
     <>
       <Stack.Screen options={{ title: product.category }} />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <View style={[styles.hero, { backgroundColor: product.tint }]}>
-          <Text style={{ fontSize: 120 }}>{product.emoji}</Text>
+        <View style={[styles.hero, { backgroundColor: glow(product.tint, 0.1) }]}>
+          <View style={[styles.halo, { borderColor: glow(product.tint, 0.55), backgroundColor: glow(product.tint, 0.12) }]} />
+          <Text style={{ fontSize: 132 }}>{product.emoji}</Text>
+          <PricePill label={money(product.price)} style={styles.heroPrice} />
         </View>
         <View style={styles.pad}>
-          <Text style={styles.brand}>{product.brand.toUpperCase()}</Text>
+          <Text style={styles.brand}>{product.brand}</Text>
           <Text style={type.title}>{product.name}</Text>
-          <Text style={styles.price}>{money(product.price)}</Text>
-          <Text style={[type.body, { marginTop: 8, lineHeight: 22 }]}>{product.description}</Text>
+
+          <View style={{ height: 14 }} />
+          <StatTrio
+            testID="stock-stats"
+            stats={[
+              { label: 'Nearest', value: nearby[0] ? formatDistance(nearby[0].distanceMi, unit) : '—' },
+              { label: 'On shelves', value: String(nearby.reduce((n, a) => n + a.stock, 0)) },
+              { label: 'Stores', value: String(nearby.length) },
+            ]}
+          />
+
+          <Text style={[type.body, { marginTop: 16, lineHeight: 22, color: colors.muted }]}>{product.description}</Text>
 
           {product.pickupPerk ? (
             <Card style={styles.perk}>
-              <Ionicons name="sparkles" size={20} color={colors.accent} />
+              <Ionicons name="sparkles" size={20} color={colors.amber} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.perkTitle}>The in-person difference</Text>
                 <Text style={styles.perkBody}>{product.pickupPerk}</Text>
@@ -75,9 +87,9 @@ export default function ProductDetail() {
                   accessibilityRole="radio"
                   accessibilityState={{ selected: isSel }}
                   onPress={() => setChosen(a.store.id)}
-                  style={[styles.store, isSel && { borderColor: colors.accent, backgroundColor: colors.accentSoft }]}
+                  style={[styles.store, isSel && { borderColor: colors.ink, backgroundColor: colors.raised }]}
                 >
-                  <Ionicons name={isSel ? 'radio-button-on' : 'radio-button-off'} size={22} color={isSel ? colors.accent : colors.muted} />
+                  <Ionicons name={isSel ? 'radio-button-on' : 'radio-button-off'} size={22} color={isSel ? colors.ink : colors.muted} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.storeName}>{a.store.name}</Text>
                     <Text style={type.small}>
@@ -85,7 +97,7 @@ export default function ProductDetail() {
                     </Text>
                     <View style={{ flexDirection: 'row', gap: 6, marginTop: 6 }}>
                       <Badge tone={a.stock <= 2 ? 'amber' : 'green'} label={a.stock <= 2 ? `Only ${a.stock} left` : 'In stock'} />
-                      <Badge tone={open ? 'neutral' : 'neutral'} label={open ? 'Open now' : 'Closed now'} icon="time-outline" />
+                      <Badge tone="neutral" label={open ? 'Open now' : 'Closed now'} icon="time-outline" />
                     </View>
                     {isSel ? <Text style={styles.exp}>✦ {a.store.experience.title}</Text> : null}
                   </View>
@@ -112,7 +124,7 @@ export default function ProductDetail() {
               <Ionicons name="checkmark-circle" size={20} color={colors.green} />
               <Text style={{ flex: 1, color: colors.ink, fontWeight: '600' }}>{added}</Text>
               <Pressable testID="go-cart" accessibilityRole="button" onPress={() => router.navigate('/cart')}>
-                <Text style={{ color: colors.accent, fontWeight: '800' }}>View cart</Text>
+                <Text style={{ color: colors.ink, fontWeight: '800', textDecorationLine: 'underline' }}>View cart</Text>
               </Pressable>
             </Card>
           ) : null}
@@ -123,16 +135,17 @@ export default function ProductDetail() {
 }
 
 const styles = StyleSheet.create({
-  hero: { height: 240, alignItems: 'center', justifyContent: 'center' },
-  pad: { padding: space.lg },
-  brand: { fontSize: 11, fontWeight: '800', letterSpacing: 1, color: colors.muted },
-  price: { fontSize: 22, fontWeight: '800', color: colors.ink, marginTop: 4 },
-  perk: { flexDirection: 'row', gap: 12, marginTop: 16, backgroundColor: colors.accentSoft, borderColor: colors.accentSoft },
+  hero: { height: 320, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  halo: { position: 'absolute', width: 230, height: 230, borderRadius: 115, borderWidth: 3 },
+  heroPrice: { position: 'absolute', bottom: 16, alignSelf: 'center' },
+  pad: { padding: space.lg, gap: 0 },
+  brand: { fontSize: 13, fontWeight: '600', color: colors.muted, marginBottom: 2 },
+  perk: { flexDirection: 'row', gap: 12, marginTop: 16, backgroundColor: colors.amberSoft, borderColor: 'transparent' },
   perkTitle: { fontWeight: '800', color: colors.ink, marginBottom: 2 },
   perkBody: { color: colors.ink, lineHeight: 20 },
   section: { ...type.h2, marginTop: 24, marginBottom: 10 },
   store: { flexDirection: 'row', gap: 12, padding: 14, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, marginBottom: 8 },
   storeName: { fontSize: 15, fontWeight: '700', color: colors.ink },
-  exp: { marginTop: 8, fontSize: 13, color: colors.accent, fontWeight: '700' },
+  exp: { marginTop: 8, fontSize: 13, color: colors.amber, fontWeight: '700' },
   toast: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16, padding: 14 },
 });

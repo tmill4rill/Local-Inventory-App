@@ -20,7 +20,7 @@ export default function StoreDetail() {
   return (
     <>
       <Stack.Screen options={{ title: STORE_TYPE_LABEL[store.type] }} />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
         <Text style={type.title}>{store.name}</Text>
         <Text style={[type.small, { marginTop: 4 }]}>
           {store.address} · {store.area} · {formatDistance(d, unit)} away
@@ -31,7 +31,7 @@ export default function StoreDetail() {
 
         <Card style={styles.exp}>
           <View style={styles.expIcon}>
-            <Ionicons name={store.experience.icon as never} size={26} color="#fff" />
+            <Ionicons name={store.experience.icon as never} size={26} color={colors.onAccent} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.expTitle}>{store.experience.title}</Text>
@@ -72,8 +72,8 @@ export default function StoreDetail() {
 }
 
 const styles = StyleSheet.create({
-  exp: { flexDirection: 'row', gap: 12, marginTop: 16, backgroundColor: colors.accentSoft, borderColor: colors.accentSoft },
-  expIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  exp: { flexDirection: 'row', gap: 12, marginTop: 16, backgroundColor: colors.amberSoft, borderColor: 'transparent' },
+  expIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.amber, alignItems: 'center', justifyContent: 'center' },
   expTitle: { fontSize: 16, fontWeight: '800', color: colors.ink, marginBottom: 2 },
   perk: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: radius.pill, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
   item: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, marginBottom: 8 },

@@ -6,7 +6,7 @@ import { getProduct } from '../../src/data/products';
 import { getStore } from '../../src/data/stores';
 import { formatSlot } from '../../src/lib/pickup';
 import { STATUS_LABEL, useApp } from '../../src/state/AppState';
-import { colors, money, radius } from '../../src/theme';
+import { colors, DOCK_SPACE, money, radius } from '../../src/theme';
 
 export default function Orders() {
   const { orders } = useApp();
@@ -22,7 +22,7 @@ export default function Orders() {
       testID="orders-list"
       data={orders}
       keyExtractor={(o) => o.id}
-      contentContainerStyle={{ padding: 16, gap: 12 }}
+      contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: DOCK_SPACE }}
       renderItem={({ item: o }) => {
         const store = o.fulfillment.type === 'pickup' ? getStore(o.fulfillment.storeId) : undefined;
         const first = getProduct(o.lines[0].productId);

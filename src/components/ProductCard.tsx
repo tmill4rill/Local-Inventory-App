@@ -4,10 +4,15 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatDistance, type DistanceUnit } from '../lib/geo';
 import type { ProductListing } from '../lib/inventory';
-import { colors, money, radius } from '../theme';
-import { Badge } from './ui';
+import { colors, glow, money, radius } from '../theme';
+import { PricePill } from './ui';
 
-export function ProductCard({ listing, unit }: { listing: ProductListing; unit: DistanceUnit }) {
+/**
+ * Gallery-style card: the item sits on black with a faint glow of its own colour,
+ * price floats on the art, and the words underneath stay small.
+ * `dense` is the 3-across scanning view — art and price only.
+ */
+export function ProductCard({ listing, unit, dense }: { listing: ProductListing; unit: DistanceUnit; dense?: boolean }) {
   const { product, inRadius } = listing;
   const nearest = inRadius[0];
   const low = nearest && nearest.stock <= 2;
@@ -15,43 +20,49 @@ export function ProductCard({ listing, unit }: { listing: ProductListing; unit: 
     <Pressable
       testID={`product-${product.id}`}
       accessibilityRole="button"
+      accessibilityLabel={`${product.name}, ${money(product.price)}${nearest ? `, ${formatDistance(nearest.distanceMi, unit)} away` : ''}`}
       onPress={() => router.push(`/product/${product.id}`)}
-      style={({ pressed }) => [styles.card, pressed && { opacity: 0.85 }]}
+      style={({ pressed }) => [styles.card, pressed && { opacity: 0.8 }]}
     >
-      <View style={[styles.art, { backgroundColor: product.tint }]}>
-        <Text style={{ fontSize: 56 }}>{product.emoji}</Text>
+      <View style={[styles.art, dense && styles.artDense, { backgroundColor: glow(product.tint, 0.22) }]}>
+        <Text style={{ fontSize: dense ? 38 : 60 }}>{product.emoji}</Text>
+        {low && !dense ? (
+          <View style={styles.tag}>
+            <Text style={styles.tagText}>Only {nearest.stock} left</Text>
+          </View>
+        ) : null}
+        <PricePill label={money(product.price)} style={[styles.price, dense && styles.priceDense]} />
       </View>
-      <View style={styles.body}>
-        <Text style={styles.brand}>{product.brand.toUpperCase()}</Text>
-        <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
-        <Text style={styles.price}>{money(product.price)}</Text>
-        {nearest ? (
-          <View style={{ marginTop: 6, gap: 4 }}>
+      {dense ? null : (
+        <View style={styles.body}>
+          <Text style={styles.name} numberOfLines={2}>
+            {product.name.startsWith(product.brand) ? product.name : `${product.brand} ${product.name}`}
+          </Text>
+          {nearest ? (
             <View style={styles.near}>
-              <Ionicons name="location" size={12} color={colors.green} />
+              <Ionicons name="location" size={11} color={colors.green} />
               <Text style={styles.nearText} numberOfLines={1}>
                 {formatDistance(nearest.distanceMi, unit)} · {nearest.store.name}
               </Text>
             </View>
-            {inRadius.length > 1 ? (
-              <Text style={styles.more}>+{inRadius.length - 1} more nearby</Text>
-            ) : low ? (
-              <Badge tone="amber" label={`Only ${nearest.stock} left`} />
-            ) : null}
-          </View>
-        ) : null}
-      </View>
+          ) : null}
+          {inRadius.length > 1 ? <Text style={styles.more}>+{inRadius.length - 1} more nearby</Text> : null}
+        </View>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { flex: 1, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
-  art: { height: 112, alignItems: 'center', justifyContent: 'center' },
-  body: { padding: 12 },
-  brand: { fontSize: 10, fontWeight: '800', letterSpacing: 0.8, color: colors.muted },
-  name: { fontSize: 14, fontWeight: '700', color: colors.ink, marginTop: 2, minHeight: 36 },
-  price: { fontSize: 15, fontWeight: '800', color: colors.ink, marginTop: 2 },
+  card: { flex: 1 },
+  art: { height: 168, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  artDense: { height: 112 },
+  tag: { position: 'absolute', top: 8, left: 8, backgroundColor: colors.amberSoft, borderRadius: radius.pill, paddingVertical: 3, paddingHorizontal: 8 },
+  tagText: { fontSize: 11, fontWeight: '700', color: colors.amber },
+  price: { position: 'absolute', bottom: 8, left: 8 },
+  priceDense: { bottom: 6, left: 6, paddingVertical: 2, paddingHorizontal: 7 },
+  body: { paddingTop: 8, paddingHorizontal: 2, gap: 3 },
+  name: { fontSize: 13, color: colors.ink, lineHeight: 17 },
   near: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   nearText: { fontSize: 11, color: colors.green, fontWeight: '600', flexShrink: 1 },
   more: { fontSize: 11, color: colors.muted },

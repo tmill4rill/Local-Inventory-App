@@ -49,7 +49,7 @@ export default function OrderDetail() {
         {store ? (
           <>
             <View style={styles.ticket}>
-              <Text style={styles.ticketLabel}>PICKUP CODE</Text>
+              <Text style={styles.ticketLabel}>Pickup code</Text>
               <Text testID="pickup-code" style={styles.code}>{order.code}</Text>
               <Text style={styles.ticketSub}>Show this at {store.experience.title === 'Concierge pickup' ? 'the concierge desk' : 'the counter'}</Text>
               <View style={styles.perforation} />
@@ -70,7 +70,7 @@ export default function OrderDetail() {
                   <React.Fragment key={s}>
                     <View style={{ alignItems: 'center', width: 76 }}>
                       <View style={[styles.dot, i <= stepIdx && { backgroundColor: colors.green, borderColor: colors.green }]}>
-                        {i <= stepIdx ? <Ionicons name="checkmark" size={14} color="#fff" /> : null}
+                        {i <= stepIdx ? <Ionicons name="checkmark" size={14} color={colors.onAccent} /> : null}
                       </View>
                       <Text testID={`step-${s}`} style={[styles.stepText, i === stepIdx && { color: colors.ink, fontWeight: '800' }]}>{STATUS_LABEL[s]}</Text>
                     </View>
@@ -105,7 +105,7 @@ export default function OrderDetail() {
               <Button testID="send-invite" icon="paper-plane-outline" label={order.invited.length ? `Invite ${order.invited.length} to come along` : 'Share with anyone'} onPress={invite} />
               {shareNote === 'copied' ? <Text testID="share-note" style={styles.note}>Invite copied. Paste it into any chat.</Text> : null}
               {shareNote === 'shared' ? <Text testID="share-note" style={styles.note}>Invite sent.</Text> : null}
-              {shareNote === 'failed' ? <Text style={[styles.note, { color: colors.accent }]}>Couldn't open sharing on this device.</Text> : null}
+              {shareNote === 'failed' ? <Text style={[styles.note, { color: colors.amber }]}>Couldn't open sharing on this device.</Text> : null}
             </Card>
           </>
         ) : (
@@ -123,14 +123,14 @@ export default function OrderDetail() {
               <View key={l.productId} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 <ProductArt emoji={p.emoji} tint={p.tint} size={44} />
                 <Text style={{ flex: 1, fontWeight: '600', color: colors.ink }}>{p.name} × {l.qty}</Text>
-                <Text style={{ fontWeight: '700' }}>{money(l.price * l.qty)}</Text>
+                <Text style={{ fontWeight: '700', color: colors.ink }}>{money(l.price * l.qty)}</Text>
               </View>
             ) : null;
           })}
           <View style={{ height: 1, backgroundColor: colors.border }} />
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={{ fontWeight: '800' }}>Total</Text>
-            <Text style={{ fontWeight: '800' }}>{money(order.total)}</Text>
+            <Text style={{ fontWeight: '800', color: colors.ink }}>Total</Text>
+            <Text style={{ fontWeight: '800', color: colors.ink }}>{money(order.total)}</Text>
           </View>
         </Card>
       </ScrollView>
@@ -140,14 +140,14 @@ export default function OrderDetail() {
 
 const styles = StyleSheet.create({
   banner: { flexDirection: 'row', gap: 10, alignItems: 'center', padding: 14, borderRadius: radius.md, backgroundColor: colors.greenSoft },
-  ticket: { backgroundColor: colors.ink, borderRadius: radius.lg, padding: 22, alignItems: 'center' },
-  ticketLabel: { color: '#BDB7AB', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
-  code: { color: '#fff', fontSize: 40, fontWeight: '800', letterSpacing: 4, marginVertical: 6 },
-  ticketSub: { color: '#BDB7AB', fontSize: 13, textAlign: 'center' },
-  perforation: { alignSelf: 'stretch', borderTopWidth: 2, borderStyle: 'dashed', borderColor: '#4A463E', marginVertical: 16 },
-  ticketStore: { color: '#fff', fontSize: 18, fontWeight: '800', textAlign: 'center' },
-  ticketWhen: { color: '#F2B8A8', fontSize: 16, fontWeight: '800', marginTop: 8 },
-  dot: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.card },
+  ticket: { backgroundColor: colors.ink, borderRadius: radius.lg, padding: 22, alignItems: 'center' }, // light paper ticket on the black floor
+  ticketLabel: { color: '#5E5E58', fontSize: 13, fontWeight: '700' },
+  code: { color: colors.onAccent, fontSize: 40, fontWeight: '800', letterSpacing: 4, marginVertical: 6 },
+  ticketSub: { color: '#5E5E58', fontSize: 13, textAlign: 'center' },
+  perforation: { alignSelf: 'stretch', borderTopWidth: 2, borderStyle: 'dashed', borderColor: '#BDBDB6', marginVertical: 16 },
+  ticketStore: { color: colors.onAccent, fontSize: 18, fontWeight: '800', textAlign: 'center' },
+  ticketWhen: { color: colors.onAccent, fontSize: 16, fontWeight: '800', marginTop: 8, paddingVertical: 4, paddingHorizontal: 12, borderRadius: 999, backgroundColor: '#E2E2DC', overflow: 'hidden' },
+  dot: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.raised },
   line: { flex: 1, height: 2, backgroundColor: colors.border, marginTop: 11 },
   stepText: { fontSize: 11, color: colors.muted, marginTop: 6, textAlign: 'center' },
   friend: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card },

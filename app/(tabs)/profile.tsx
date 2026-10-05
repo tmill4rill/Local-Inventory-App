@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RadiusControl } from '../../src/components/RadiusControl';
 import { Button, Card, Chip, Label } from '../../src/components/ui';
 import { DEFAULT_PLACE, useApp } from '../../src/state/AppState';
-import { colors, type } from '../../src/theme';
+import { colors, DOCK_SPACE, type } from '../../src/theme';
 
 export default function Profile() {
   const { place, setPlace, radiusMi, setRadiusMi, unit, setUnit, resetDemo } = useApp();
@@ -27,7 +27,7 @@ export default function Profile() {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 14 }}>
+    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: DOCK_SPACE, gap: 14 }}>
       <Card style={{ gap: 10 }}>
         <Label>How far will you go?</Label>
         <Text style={type.body}>Only stores inside this range show up for pickup.</Text>

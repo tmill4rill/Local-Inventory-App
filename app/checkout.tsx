@@ -65,7 +65,7 @@ export default function Checkout() {
               {store.address} · {formatDistance(distanceMiles(place.coord, store.coord), unit)} away
             </Text>
             <View style={styles.exp}>
-              <Ionicons name="sparkles" size={16} color={colors.accent} />
+              <Ionicons name="sparkles" size={16} color={colors.amber} />
               <Text style={{ flex: 1, color: colors.ink, fontSize: 13 }}>
                 <Text style={{ fontWeight: '800' }}>{store.experience.title}. </Text>
                 {store.experience.detail}
@@ -86,7 +86,7 @@ export default function Checkout() {
                   onPress={() => setSlots((st) => ({ ...st, [g.key]: s.iso }))}
                   style={[styles.slot, slots[g.key] === s.iso && { backgroundColor: colors.accent, borderColor: colors.accent }]}
                 >
-                  <Text style={[styles.slotText, slots[g.key] === s.iso && { color: '#fff' }]}>{s.label}</Text>
+                  <Text style={[styles.slotText, slots[g.key] === s.iso && { color: colors.onAccent }]}>{s.label}</Text>
                 </Pressable>
               ))}
             </View>
@@ -105,7 +105,7 @@ export default function Checkout() {
 
 const styles = StyleSheet.create({
   h: { fontSize: 17, fontWeight: '800', color: colors.ink },
-  exp: { flexDirection: 'row', gap: 8, padding: 10, borderRadius: 10, backgroundColor: colors.accentSoft, marginTop: 4 },
+  exp: { flexDirection: 'row', gap: 8, padding: 10, borderRadius: 10, backgroundColor: colors.amberSoft, marginTop: 4 },
   slot: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card },
   slotText: { fontWeight: '700', color: colors.ink, fontSize: 13 },
 });

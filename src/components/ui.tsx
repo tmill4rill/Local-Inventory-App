@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
-import { colors, radius, space } from '../theme';
+import { colors, glow, radius, space } from '../theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -22,7 +22,7 @@ export function Button({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
-  const fg = variant === 'primary' ? '#fff' : colors.ink;
+  const fg = variant === 'primary' ? colors.onAccent : colors.ink;
   return (
     <Pressable
       testID={testID}
@@ -32,7 +32,7 @@ export function Button({
       style={({ pressed }) => [
         styles.btn,
         variant === 'primary' && { backgroundColor: colors.accent },
-        variant === 'secondary' && { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+        variant === 'secondary' && { backgroundColor: colors.raised, borderWidth: 1, borderColor: colors.border },
         variant === 'ghost' && { backgroundColor: 'transparent' },
         disabled && { opacity: 0.45 },
         pressed && { opacity: 0.8 },
@@ -45,30 +45,64 @@ export function Button({
   );
 }
 
+/**
+ * Two chip shapes, as in GOAT's filter rows: squared chips for structural filters
+ * (category, store type) and rounded pills for quick on/off toggles.
+ */
 export function Chip({
   label,
   selected,
   onPress,
   icon,
+  shape = 'pill',
   testID,
 }: {
   label: string;
   selected?: boolean;
   onPress?: () => void;
   icon?: IconName;
+  shape?: 'pill' | 'square';
   testID?: string;
 }) {
+  const fg = selected ? colors.onAccent : colors.ink;
   return (
     <Pressable
       testID={testID}
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected }}
       onPress={onPress}
-      style={[styles.chip, selected && { backgroundColor: colors.ink, borderColor: colors.ink }]}
+      style={[
+        styles.chip,
+        shape === 'square' && styles.chipSquare,
+        selected && { backgroundColor: colors.accent, borderColor: colors.accent },
+      ]}
     >
-      {icon ? <Ionicons name={icon} size={14} color={selected ? '#fff' : colors.ink} style={{ marginRight: 4 }} /> : null}
-      <Text style={[styles.chipText, selected && { color: '#fff' }]}>{label}</Text>
+      {icon ? <Ionicons name={icon} size={14} color={fg} style={{ marginRight: 4 }} /> : null}
+      <Text style={[styles.chipText, { color: fg }]}>{label}</Text>
     </Pressable>
+  );
+}
+
+/** White price pill that floats on product art. */
+export function PricePill({ label, style }: { label: string; style?: StyleProp<ViewStyle> }) {
+  return (
+    <View style={[styles.pricePill, style]}>
+      <Text style={styles.pricePillText}>{label}</Text>
+    </View>
+  );
+}
+
+/** Three side-by-side figures, after GOAT's Best price / Last sold / Top offer row. */
+export function StatTrio({ stats, testID }: { stats: { label: string; value: string }[]; testID?: string }) {
+  return (
+    <View testID={testID} style={styles.trio}>
+      {stats.map((s) => (
+        <View key={s.label} style={styles.trioCell}>
+          <Text style={styles.trioLabel}>{s.label}</Text>
+          <Text style={styles.trioValue} numberOfLines={1}>{s.value}</Text>
+        </View>
+      ))}
+    </View>
   );
 }
 
@@ -77,7 +111,7 @@ export function Badge({ label, tone = 'green', icon }: { label: string; tone?: '
     green: [colors.greenSoft, colors.green],
     amber: [colors.amberSoft, colors.amber],
     accent: [colors.accentSoft, colors.accent],
-    neutral: ['#EFEBE3', colors.muted],
+    neutral: [colors.neutralSoft, colors.muted],
   }[tone];
   return (
     <View style={[styles.badge, { backgroundColor: map[0] }]}>
@@ -93,7 +127,7 @@ export function Card({ children, style }: { children: React.ReactNode; style?: S
 
 export function ProductArt({ emoji, tint, size = 96, style }: { emoji: string; tint: string; size?: number; style?: StyleProp<ViewStyle> }) {
   return (
-    <View style={[{ width: size, height: size, borderRadius: radius.md, backgroundColor: tint, alignItems: 'center', justifyContent: 'center' }, style]}>
+    <View style={[{ width: size, height: size, borderRadius: radius.md, backgroundColor: glow(tint, 0.16), alignItems: 'center', justifyContent: 'center' }, style]}>
       <Text style={{ fontSize: size * 0.5 }}>{emoji}</Text>
     </View>
   );
@@ -119,9 +153,16 @@ export function Label({ children, style }: { children: React.ReactNode; style?: 
 }
 
 const styles = StyleSheet.create({
-  btn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, paddingHorizontal: 18, borderRadius: radius.md },
+  btn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 15, paddingHorizontal: 18, borderRadius: radius.pill },
   btnText: { fontSize: 16, fontWeight: '700' },
   chip: { flexDirection: 'row', alignItems: 'center', paddingVertical: 7, paddingHorizontal: 13, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, marginRight: space.sm },
+  chipSquare: { borderRadius: radius.sm, backgroundColor: colors.raised, borderColor: colors.raised },
+  pricePill: { alignSelf: 'flex-start', backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 4, paddingHorizontal: 10 },
+  pricePillText: { color: colors.onAccent, fontWeight: '800', fontSize: 13 },
+  trio: { flexDirection: 'row', gap: 8 },
+  trioCell: { flex: 1, backgroundColor: colors.raised, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, paddingVertical: 10, paddingHorizontal: 12 },
+  trioLabel: { fontSize: 12, color: colors.muted },
+  trioValue: { fontSize: 17, fontWeight: '800', color: colors.ink, marginTop: 4 },
   chipText: { fontSize: 13, fontWeight: '600', color: colors.ink },
   badge: { flexDirection: 'row', alignItems: 'center', paddingVertical: 3, paddingHorizontal: 8, borderRadius: radius.pill, alignSelf: 'flex-start' },
   badgeText: { fontSize: 11, fontWeight: '700' },
@@ -129,5 +170,5 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', padding: 32, gap: 8 },
   emptyTitle: { fontSize: 18, fontWeight: '700', color: colors.ink, marginTop: 8 },
   emptyBody: { fontSize: 14, color: colors.muted, textAlign: 'center', marginBottom: 8 },
-  label: { fontSize: 12, fontWeight: '700', color: colors.muted, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 6 },
+  label: { fontSize: 13, fontWeight: '700', color: colors.muted, marginBottom: 6 },
 });
