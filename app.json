@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "LocalPick",
+    "slug": "local-pick",
+    "version": "0.1.0",
+    "scheme": "localpick",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": { "supportsTablet": false, "bundleIdentifier": "com.ironpeony.localpick" },
+    "android": { "package": "com.ironpeony.localpick" },
+    "web": { "bundler": "metro", "output": "single" },
+    "plugins": [
+      "expo-router",
+      ["expo-location", { "locationWhenInUsePermission": "LocalPick uses your location to find stores near you for pickup." }]
+    ]
+  }
+}
