@@ -1,29 +1,30 @@
 import { router } from 'expo-router';
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Badge, Button, Empty, ProductArt } from '../../src/components/ui';
+import { Badge, Button, Empty, Headline, ProductArt } from '../../src/components/ui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getProduct } from '../../src/data/products';
 import { getStore } from '../../src/data/stores';
 import { formatSlot } from '../../src/lib/pickup';
 import { STATUS_LABEL, useApp } from '../../src/state/AppState';
-import { colors, DOCK_SPACE, money, radius } from '../../src/theme';
+import { colors, TABBAR_SPACE, money, radius } from '../../src/theme';
 import { productImage } from '../../src/data/productImages';
 
 export default function Orders() {
   const { orders } = useApp();
-  if (orders.length === 0) {
-    return (
-      <Empty icon="ticket-outline" title="No pickups yet" body="Reserve something nearby and your pickup code will show up here.">
-        <Button label="Discover nearby" onPress={() => router.navigate('/')} />
-      </Empty>
-    );
-  }
+  const insets = useSafeAreaInsets();
   return (
     <FlatList
       testID="orders-list"
       data={orders}
       keyExtractor={(o) => o.id}
-      contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: DOCK_SPACE }}
+      contentContainerStyle={{ padding: 16, gap: 12, paddingTop: insets.top + 16, paddingBottom: TABBAR_SPACE + insets.bottom }}
+      ListHeaderComponent={<Headline before="Your " accent="pickups" style={{ marginBottom: 8 }} />}
+      ListEmptyComponent={
+        <Empty icon="ticket-outline" title="No pickups yet" body="Reserve something nearby and your pickup code will show up here.">
+          <Button label="Shop nearby" onPress={() => router.navigate('/shop')} />
+        </Empty>
+      }
       renderItem={({ item: o }) => {
         const store = o.fulfillment.type === 'pickup' ? getStore(o.fulfillment.storeId) : undefined;
         const first = getProduct(o.lines[0].productId);
@@ -51,7 +52,7 @@ export default function Orders() {
 
 const styles = StyleSheet.create({
   card: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 14, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border },
-  title: { fontSize: 16, fontWeight: '800', color: colors.ink },
+  title: { fontSize: 16, fontWeight: '600', color: colors.ink },
   meta: { fontSize: 13, color: colors.muted, marginTop: 2 },
-  code: { fontSize: 12, fontWeight: '800', color: colors.ink, letterSpacing: 1 },
+  code: { fontSize: 12, fontWeight: '700', color: colors.ink, letterSpacing: 1 },
 });

@@ -1,10 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View, type ImageSourcePropType, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
-import { colors, glow, radius, space } from '../theme';
+import { getProduct } from '../data/products';
+import { productImage } from '../data/productImages';
+import { colors, glow, radius, space, type } from '../theme';
 
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
+export type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
+/** Black pill for the main action, light-gray pill for the secondary one, as in Alta. */
 export function Button({
   label,
   onPress,
@@ -32,29 +35,25 @@ export function Button({
       style={({ pressed }) => [
         styles.btn,
         variant === 'primary' && { backgroundColor: colors.accent },
-        variant === 'secondary' && { backgroundColor: colors.raised, borderWidth: 1, borderColor: colors.border },
+        variant === 'secondary' && { backgroundColor: colors.raised },
         variant === 'ghost' && { backgroundColor: 'transparent' },
-        disabled && { opacity: 0.45 },
-        pressed && { opacity: 0.8 },
+        disabled && { opacity: 0.4 },
+        pressed && { opacity: 0.75 },
         style,
       ]}
     >
-      {icon ? <Ionicons name={icon} size={18} color={fg} style={{ marginRight: 8 }} /> : null}
+      {icon ? <Ionicons name={icon} size={17} color={fg} style={{ marginRight: 8 }} /> : null}
       <Text style={[styles.btnText, { color: fg }]}>{label}</Text>
     </Pressable>
   );
 }
 
-/**
- * Two chip shapes, as in GOAT's filter rows: squared chips for structural filters
- * (category, store type) and rounded pills for quick on/off toggles.
- */
+/** Filter chip: soft gray when off, black when on. */
 export function Chip({
   label,
   selected,
   onPress,
   icon,
-  shape = 'pill',
   testID,
 }: {
   label: string;
@@ -71,19 +70,15 @@ export function Chip({
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected }}
       onPress={onPress}
-      style={[
-        styles.chip,
-        shape === 'square' && styles.chipSquare,
-        selected && { backgroundColor: colors.accent, borderColor: colors.accent },
-      ]}
+      style={[styles.chip, selected && { backgroundColor: colors.accent }]}
     >
-      {icon ? <Ionicons name={icon} size={14} color={fg} style={{ marginRight: 4 }} /> : null}
+      {icon ? <Ionicons name={icon} size={14} color={fg} style={{ marginRight: 5 }} /> : null}
       <Text style={[styles.chipText, { color: fg }]}>{label}</Text>
     </Pressable>
   );
 }
 
-/** White price pill that floats on product art. */
+/** Small price label for the corner of a photo. */
 export function PricePill({ label, style }: { label: string; style?: StyleProp<ViewStyle> }) {
   return (
     <View style={[styles.pricePill, style]}>
@@ -92,7 +87,7 @@ export function PricePill({ label, style }: { label: string; style?: StyleProp<V
   );
 }
 
-/** Three side-by-side figures, after GOAT's Best price / Last sold / Top offer row. */
+/** Three side-by-side figures. */
 export function StatTrio({ stats, testID }: { stats: { label: string; value: string }[]; testID?: string }) {
   return (
     <View testID={testID} style={styles.trio}>
@@ -110,7 +105,7 @@ export function Badge({ label, tone = 'green', icon }: { label: string; tone?: '
   const map = {
     green: [colors.greenSoft, colors.green],
     amber: [colors.amberSoft, colors.amber],
-    accent: [colors.accentSoft, colors.accent],
+    accent: [colors.accent, colors.onAccent],
     neutral: [colors.neutralSoft, colors.muted],
   }[tone];
   return (
@@ -144,7 +139,7 @@ export function ProductPhoto({
   const [failed, setFailed] = useState(false);
   const showPhoto = !!image && !failed;
   return (
-    <View style={[{ alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: showPhoto ? colors.bg : glow(tint, 0.18) }, style]}>
+    <View style={[{ alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: showPhoto ? colors.tile : glow(tint) }, style]}>
       {showPhoto ? (
         <Image source={image!} onError={() => setFailed(true)} resizeMode="cover" style={styles.photo} accessibilityIgnoresInvertColors />
       ) : (
@@ -156,13 +151,89 @@ export function ProductPhoto({
 }
 
 export function ProductArt({ emoji, tint, image, size = 96, style }: { emoji: string; tint: string; image?: ImageSourcePropType; size?: number; style?: StyleProp<ViewStyle> }) {
-  return <ProductPhoto image={image} emoji={emoji} tint={tint} emojiSize={size * 0.5} style={[{ width: size, height: size, borderRadius: radius.md }, style]} />;
+  return <ProductPhoto image={image} emoji={emoji} tint={tint} emojiSize={size * 0.5} style={[{ width: size, height: size, borderRadius: radius.sm }, style]} />;
+}
+
+/** Thumbnail for a product id. */
+export function Thumb({ id, size = 64, style }: { id: string; size?: number; style?: StyleProp<ViewStyle> }) {
+  const p = getProduct(id);
+  if (!p) return null;
+  return <ProductArt emoji={p.emoji} tint={p.tint} image={productImage(p.id)} size={size} style={style} />;
+}
+
+/**
+ * Alta-style outfit collage: clothes stacked on the left, shoes, bag and small pieces on the
+ * right, all on the same pale tile so it reads as one flat-lay.
+ */
+export function LookCollage({ items, height = 300, style }: { items: string[]; height?: number; style?: StyleProp<ViewStyle> }) {
+  const products = items.map(getProduct).filter((p): p is NonNullable<typeof p> => !!p);
+  const left = products.filter((p) => ['Outerwear', 'Tops', 'Dresses', 'Bottoms'].includes(p.category));
+  const right = products.filter((p) => !left.includes(p));
+  const col = (list: typeof products, flexWeights: number[]) =>
+    list.map((p, i) => (
+      <ProductPhoto key={p.id} image={productImage(p.id)} emoji={p.emoji} tint={p.tint} emojiSize={36} style={{ flex: flexWeights[i] ?? 1, width: '100%' }} />
+    ));
+  return (
+    <View style={[styles.collage, { height }, style]} accessibilityLabel={`Look: ${products.map((p) => p.name).join(', ')}`}>
+      <View style={styles.collageCol}>{col(left, left.map(() => 1))}</View>
+      {right.length ? <View style={[styles.collageCol, { flex: 0.82 }]}>{col(right, right.map(() => 1))}</View> : null}
+    </View>
+  );
+}
+
+export function Heart({ on, onPress, size = 20, testID, style }: { on: boolean; onPress: () => void; size?: number; testID?: string; style?: StyleProp<ViewStyle> }) {
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={on ? 'Remove from wishlist' : 'Add to wishlist'}
+      accessibilityState={{ selected: on }}
+      hitSlop={10}
+      onPress={onPress}
+      style={style}
+    >
+      <Ionicons name={on ? 'heart' : 'heart-outline'} size={size} color={on ? colors.heart : colors.ink} />
+    </Pressable>
+  );
+}
+
+/** Price with the original struck through when the piece is marked down. */
+export function Price({ price, compareAt, style }: { price: number; compareAt?: number; style?: StyleProp<TextStyle> }) {
+  const money = (n: number) => `$${n.toLocaleString('en-US')}`;
+  return (
+    <Text style={[styles.price, style]}>
+      {money(price)}
+      {compareAt ? <Text style={styles.compare}>{'  '}{money(compareAt)}</Text> : null}
+    </Text>
+  );
+}
+
+/** A heading with an italic serif accent word, e.g. "What do you *wear*?". */
+export function Headline({ before, accent, after = '', style }: { before: string; accent: string; after?: string; style?: StyleProp<TextStyle> }) {
+  return (
+    <Text style={[type.title, style]}>
+      {before}
+      <Text style={type.accent}>{accent}</Text>
+      {after}
+    </Text>
+  );
+}
+
+/** Thin rule with a centred caption, like Alta's "Today's suggestions". */
+export function Divider({ label }: { label: string }) {
+  return (
+    <View style={styles.divider}>
+      <View style={styles.rule} />
+      <Text style={styles.dividerText}>{label}</Text>
+      <View style={styles.rule} />
+    </View>
+  );
 }
 
 export function Empty({ icon, title, body, children }: { icon: IconName; title: string; body: string; children?: React.ReactNode }) {
   return (
     <View style={styles.empty}>
-      <Ionicons name={icon} size={44} color={colors.muted} />
+      <Ionicons name={icon} size={40} color={colors.faint} />
       <Text style={styles.emptyTitle}>{title}</Text>
       <Text style={styles.emptyBody}>{body}</Text>
       {children}
@@ -178,25 +249,44 @@ export function Label({ children, style }: { children: React.ReactNode; style?: 
   return <Text style={[styles.label, style]}>{children}</Text>;
 }
 
+/** Key/value row for detail tables. */
+export function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.detailRow}>
+      <Text style={styles.detailLabel}>{label}</Text>
+      <Text style={styles.detailValue} numberOfLines={1}>{value}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   // Explicit 100% sizes: on web, a bundled image otherwise keeps its intrinsic 800px size.
   photo: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   btn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 15, paddingHorizontal: 18, borderRadius: radius.pill },
-  btnText: { fontSize: 16, fontWeight: '700' },
-  chip: { flexDirection: 'row', alignItems: 'center', paddingVertical: 7, paddingHorizontal: 13, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, marginRight: space.sm },
-  chipSquare: { borderRadius: radius.sm, backgroundColor: colors.raised, borderColor: colors.raised },
-  pricePill: { alignSelf: 'flex-start', backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 4, paddingHorizontal: 10 },
-  pricePillText: { color: colors.onAccent, fontWeight: '800', fontSize: 13 },
+  btnText: { fontSize: 15, fontWeight: '600' },
+  chip: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: colors.raised, marginRight: space.sm },
+  chipText: { fontSize: 13, fontWeight: '500', color: colors.ink },
+  pricePill: { alignSelf: 'flex-start', backgroundColor: colors.bg, borderRadius: radius.pill, paddingVertical: 3, paddingHorizontal: 9 },
+  pricePillText: { color: colors.ink, fontWeight: '700', fontSize: 12 },
   trio: { flexDirection: 'row', gap: 8 },
-  trioCell: { flex: 1, backgroundColor: colors.raised, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, paddingVertical: 10, paddingHorizontal: 12 },
+  trioCell: { flex: 1, backgroundColor: colors.surface, borderRadius: radius.md, paddingVertical: 10, paddingHorizontal: 12 },
   trioLabel: { fontSize: 12, color: colors.muted },
-  trioValue: { fontSize: 17, fontWeight: '800', color: colors.ink, marginTop: 4 },
-  chipText: { fontSize: 13, fontWeight: '600', color: colors.ink },
+  trioValue: { fontSize: 17, fontWeight: '700', color: colors.ink, marginTop: 4 },
   badge: { flexDirection: 'row', alignItems: 'center', paddingVertical: 3, paddingHorizontal: 8, borderRadius: radius.pill, alignSelf: 'flex-start' },
-  badgeText: { fontSize: 11, fontWeight: '700' },
+  badgeText: { fontSize: 11, fontWeight: '600' },
   card: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, padding: space.lg },
+  collage: { flexDirection: 'row', gap: 6, backgroundColor: colors.bg },
+  collageCol: { flex: 1, gap: 6 },
+  price: { fontSize: 13, color: colors.ink },
+  compare: { color: colors.muted, textDecorationLine: 'line-through' },
+  divider: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 14 },
+  rule: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
+  dividerText: { fontSize: 13, color: colors.muted },
   empty: { alignItems: 'center', padding: 32, gap: 8 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: colors.ink, marginTop: 8 },
-  emptyBody: { fontSize: 14, color: colors.muted, textAlign: 'center', marginBottom: 8 },
-  label: { fontSize: 13, fontWeight: '700', color: colors.muted, marginBottom: 6 },
+  emptyTitle: { fontSize: 18, fontWeight: '600', color: colors.ink, marginTop: 8 },
+  emptyBody: { fontSize: 14, color: colors.muted, textAlign: 'center', marginBottom: 8, lineHeight: 20 },
+  label: { fontSize: 13, fontWeight: '600', color: colors.muted, marginBottom: 6 },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, gap: 16 },
+  detailLabel: { fontSize: 13, color: colors.muted },
+  detailValue: { fontSize: 15, color: colors.ink, flexShrink: 1, textAlign: 'right' },
 });

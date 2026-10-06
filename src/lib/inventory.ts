@@ -14,7 +14,7 @@ function hash(input: string): number {
 
 function eligible(product: Product, store: Store): boolean {
   if (!store.categories.includes(product.category)) return false;
-  if (store.type === 'brand' && product.brand !== 'Orchard') return false;
+  if (store.brand && product.brand !== store.brand) return false;
   return true;
 }
 

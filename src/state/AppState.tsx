@@ -41,16 +41,25 @@ export const FRIENDS = [
   { id: 'leo', name: 'Leo', emoji: '🧑🏼‍🎨' },
 ];
 
+/** An outfit saved to a day on the calendar. */
+export type Look = { id: string; day: string; title: string; items: string[]; createdAt: string };
+
+export type ClosetItem = { productId: string; addedAt: string; source: 'pickup' | 'manual' };
+
 type Persisted = {
   radiusMi: number;
   unit: DistanceUnit;
   place: Place;
   cart: CartLine[];
   orders: Order[];
+  wishlist: string[];
+  closet: ClosetItem[];
+  looks: Look[];
 };
 
-const INITIAL: Persisted = { radiusMi: 10, unit: 'mi', place: DEFAULT_PLACE, cart: [], orders: [] };
-const STORAGE_KEY = 'localpick:v1';
+const INITIAL: Persisted = { radiusMi: 10, unit: 'mi', place: DEFAULT_PLACE, cart: [], orders: [], wishlist: [], closet: [], looks: [] };
+// v2: the catalog changed to luxury fashion, so v1 carts and orders point at products that no longer exist.
+const STORAGE_KEY = 'localpick:v2';
 
 export type PlaceOrderInput = {
   groups: { fulfillment: Fulfillment; slotISO?: string; lines: CartLine[] }[];
@@ -69,6 +78,12 @@ type Ctx = Persisted & {
   toggleInvite: (orderId: string, friendId: string) => void;
   advanceOrder: (orderId: string) => void;
   resetDemo: () => void;
+  toggleWishlist: (productId: string) => void;
+  setOwned: (productId: string, owned: boolean) => void;
+  saveLook: (look: Omit<Look, 'id' | 'createdAt'> & { id?: string }) => Look;
+  removeLook: (lookId: string) => void;
+  owns: (productId: string) => boolean;
+  wished: (productId: string) => boolean;
 };
 
 const AppContext = createContext<Ctx | null>(null);
@@ -169,12 +184,41 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           ),
         })),
       advanceOrder: (orderId) =>
+        patch((s) => {
+          const orders = s.orders.map((o): Order =>
+            o.id === orderId && o.status === 'placed' ? { ...o, status: 'ready' } : o.id === orderId && o.status === 'ready' ? { ...o, status: 'picked_up' } : o,
+          );
+          // Picked-up pieces land in the closet so the stylist can use them.
+          const done = orders.find((o) => o.id === orderId && o.status === 'picked_up');
+          const now = new Date().toISOString();
+          const added = (done?.lines ?? [])
+            .map((l) => l.productId)
+            .filter((id) => !s.closet.some((c) => c.productId === id))
+            .map((productId): ClosetItem => ({ productId, addedAt: now, source: 'pickup' }));
+          return { ...s, orders, closet: [...added, ...s.closet] };
+        }),
+      toggleWishlist: (productId) =>
         patch((s) => ({
           ...s,
-          orders: s.orders.map((o) =>
-            o.id === orderId && o.status === 'placed' ? { ...o, status: 'ready' } : o.id === orderId && o.status === 'ready' ? { ...o, status: 'picked_up' } : o,
-          ),
+          wishlist: s.wishlist.includes(productId) ? s.wishlist.filter((id) => id !== productId) : [productId, ...s.wishlist],
         })),
+      setOwned: (productId, owned) =>
+        patch((s) => ({
+          ...s,
+          closet: owned
+            ? s.closet.some((c) => c.productId === productId)
+              ? s.closet
+              : [{ productId, addedAt: new Date().toISOString(), source: 'manual' }, ...s.closet]
+            : s.closet.filter((c) => c.productId !== productId),
+        })),
+      saveLook: (input) => {
+        const look: Look = { id: input.id ?? uid(), createdAt: new Date().toISOString(), day: input.day, title: input.title, items: input.items };
+        patch((s) => ({ ...s, looks: [look, ...s.looks.filter((l) => l.id !== look.id)] }));
+        return look;
+      },
+      removeLook: (lookId) => patch((s) => ({ ...s, looks: s.looks.filter((l) => l.id !== lookId) })),
+      owns: (productId) => state.closet.some((c) => c.productId === productId),
+      wished: (productId) => state.wishlist.includes(productId),
       resetDemo: () => setState({ ...INITIAL }),
     }),
     [state, ready, patch],

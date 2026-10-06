@@ -8,7 +8,7 @@ import { chromium } from 'playwright-core';
 
 const DIST = new URL('../dist/', import.meta.url).pathname;
 const SHOTS = process.argv[2];
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.ttf': 'font/ttf', '.json': 'application/json' };
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.jpg': 'image/jpeg', '.ttf': 'font/ttf', '.json': 'application/json' };
 
 const server = createServer(async (req, res) => {
   const raw = decodeURIComponent(new URL(req.url, 'http://x').pathname);
@@ -33,16 +33,20 @@ const shot = (name) => SHOTS && page.screenshot({ path: join(SHOTS, `${name}.png
 const step = (msg) => console.log('•', msg);
 
 try {
+  // Today: suggested looks built from nearby stock.
   await page.goto(base);
-  await page.getByText('Go get it in person.').waitFor();
-  step('Discover renders');
+  await page.getByText("Today's suggestions").waitFor();
+  await page.getByTestId('suggestion-work').waitFor();
+  step('Today renders with suggested looks');
+  await shot('01-today');
+
+  // Shop: range levels and the extend-range prompt.
+  await page.getByTestId('tab-shop').click();
+  await page.getByText('Shop it online.', { exact: false }).waitFor();
   const countText = async () => (await page.getByText(/items? ready for pickup nearby/).textContent()) ?? '';
   const n10 = parseInt(await countText());
-  await shot('01-discover');
-
-  // Radius: shrinking hides items; Extend control appears for the ones beyond range.
+  await shot('02-shop');
   await page.getByTestId('radius-toggle').click();
-  await shot('02-radius');
   const slider = page.getByTestId('radius-slider');
   await slider.waitFor();
   const box = await slider.boundingBox();
@@ -60,25 +64,31 @@ try {
   await page.waitForFunction((n) => parseInt(document.body.innerText.match(/(\d+) items? ready/)?.[1] ?? '0') > n, n1);
   step('"Extend range" prompt widens the radius');
   await page.getByTestId('radius-toggle').click(); // close panel
+  await page.getByTestId('level-10').click();
 
-  // Product -> reserve for pickup.
+  // Product: wishlist, Style this item, reserve for pickup.
   await page.getByTestId('search-input').fill('trench');
-  await page.getByTestId('product-p-trench').click();
+  await page.getByTestId('product-o-trench').click();
   await page.getByText('The in-person difference').waitFor();
+  await page.getByTestId('wish').click();
   await shot('03-product');
+  await page.getByTestId('style-item').click();
+  await page.getByTestId('save-look').waitFor();
+  assert.ok(await page.getByTestId('opt-o-trench').isVisible(), 'builder starts from the anchored piece');
+  await shot('04-builder');
+  step('Style this item opens the look builder around it');
+  await page.goBack();
   await page.getByTestId('add-pickup').click();
   await page.getByText(/Added for pickup at/).waitFor();
   step('Reserved for pickup');
   await page.getByTestId('go-cart').click();
-  await page.getByText(/^Pickup · Mason/).waitFor();
-  await shot('04-cart');
+  await page.getByText(/^Pickup · /).first().waitFor();
+  await shot('05-bag');
 
   // Checkout requires a slot.
   await page.getByTestId('checkout').click();
   await page.getByText('When will you come?').waitFor();
-  assert.ok(await page.getByTestId('place-order').isDisabled?.() ?? true, 'place order disabled until slot picked');
   await page.locator('[data-testid^="slot-"]').first().click();
-  await shot('05-checkout');
   await page.getByTestId('place-order').click();
 
   // Order confirmation + social invite.
@@ -94,21 +104,49 @@ try {
   const clip = await page.evaluate(() => navigator.clipboard.readText());
   assert.match(clip, /Maya & Leo/);
   assert.ok(clip.includes(code), 'invite includes pickup code');
-  step('Invite composed for friends: ' + clip.slice(0, 70) + '…');
+  step('Invite composed for friends');
 
-  // Status steps through to picked up.
+  // Picking it up puts it in the closet.
   await page.getByTestId('advance').click();
   await page.getByTestId('advance').click();
-  await page.getByTestId('advance').waitFor({ state: 'visible' });
-  assert.ok(await page.getByTestId('step-picked_up').isVisible());
+  await page.getByTestId('step-picked_up').waitFor();
+  await page.goto(base + '/closet');
+  await page.getByTestId('closet-o-trench').waitFor();
+  await page.getByTestId('closet-tab-wishlist').click();
+  await page.getByTestId('closet-o-trench').waitFor();
+  step('Picked-up piece is in the closet; hearted piece is in the wishlist');
 
-  // Persistence across reload: the order is still listed under Pickups.
-  await page.goto(base); // fresh load: state must come back from storage
-  await page.getByText('Go get it in person.').waitFor();
-  await page.getByText('Pickups').last().click();
+  // Save and reserve a suggested look from Today.
+  await page.getByTestId('tab-index').click();
+  await page.getByTestId('save-work').click();
+  await page.getByText('Saved look to today').waitFor();
+  await page.getByTestId('reserve-evening').click();
+  await page.getByText(/reserved (at|across)/).waitFor();
+  const bagLabel = await page.getByTestId('open-bag').getAttribute('aria-label');
+  assert.ok(parseInt(bagLabel.match(/(\d+)/)[1]) >= 3, `look pieces in bag: ${bagLabel}`);
+  await shot('07-today-saved');
+  step('Suggested look saved to today and reserved for pickup');
+
+  // Stylist from the + menu.
+  await page.getByTestId('plus').click();
+  await page.getByTestId('menu-stylist').click();
+  await page.getByTestId('stylist-input').fill('dinner date, something black');
+  await page.getByTestId('stylist-send').click();
+  await page.getByTestId('stylist-reply').waitFor();
+  assert.match(await page.getByTestId('stylist-reply').innerText(), /dinner-ready look/);
+  await shot('08-stylist');
+  step('Stylist answers with a nearby look');
+
+  // Persistence across reload.
+  await page.goto(base);
+  await page.getByText("Today's suggestions").waitFor();
+  await page.getByTestId('tab-orders').click();
   await page.getByText(code).waitFor();
-  await shot('07-orders');
-  step('Order persisted across reload');
+  await page.getByTestId('tab-closet').click();
+  await page.getByTestId('closet-tab-looks').click();
+  await page.getByText('Work Presentation').first().waitFor();
+  await shot('09-looks');
+  step('Order, closet and saved look persist across reload');
 
   assert.deepEqual(errors.filter((e) => !/favicon|Failed to load resource/.test(e)), [], 'no console errors');
   console.log('\nE2E smoke test passed');

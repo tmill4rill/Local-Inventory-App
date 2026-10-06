@@ -2,25 +2,35 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Badge, Button, Card, Empty, PricePill, ProductPhoto, StatTrio } from '../../src/components/ui';
-import { getProduct, SHIPPING_FEE } from '../../src/data/products';
+import { Badge, Button, Card, DetailRow, Empty, Heart, Price, ProductPhoto, StatTrio, Thumb } from '../../src/components/ui';
+import { getProduct, OCCASION_LABEL, PRODUCTS, SHIPPING_FEE } from '../../src/data/products';
 import { STORE_TYPE_LABEL } from '../../src/data/stores';
 import { formatDistance } from '../../src/lib/geo';
 import { availabilityFor, withinRadius } from '../../src/lib/inventory';
 import { isOpenNow } from '../../src/lib/pickup';
 import { useApp } from '../../src/state/AppState';
-import { colors, glow, money, radius, space, type } from '../../src/theme';
+import { colors, money, radius, space, type } from '../../src/theme';
 import { productImage } from '../../src/data/productImages';
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const product = getProduct(String(id));
-  const { place, radiusMi, unit, setRadiusMi, addToCart } = useApp();
+  const { place, radiusMi, unit, setRadiusMi, addToCart, wished, toggleWishlist, owns, setOwned } = useApp();
   const [chosen, setChosen] = useState<string | undefined>();
   const [added, setAdded] = useState<string | null>(null);
 
   const all = useMemo(() => (product ? availabilityFor(product, place.coord) : []), [product, place]);
   const nearby = useMemo(() => withinRadius(all, radiusMi), [all, radiusMi]);
+  // Same category first, then pieces that share an occasion; only what is on shelves nearby.
+  const similar = useMemo(() => {
+    if (!product) return [];
+    return PRODUCTS.filter((p) => p.id !== product.id && withinRadius(availabilityFor(p, place.coord), radiusMi).length)
+      .map((p) => ({ p, score: (p.category === product.category ? 2 : 0) + (p.occasions.some((o) => product.occasions.includes(o)) ? 1 : 0) }))
+      .filter((x) => x.score >= 2)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map((x) => x.p);
+  }, [product, place, radiusMi]);
 
   if (!product) return <Empty icon="alert-circle-outline" title="Product not found" body="This item is no longer available." />;
 
@@ -37,13 +47,38 @@ export default function ProductDetail() {
     <>
       <Stack.Screen options={{ title: product.category }} />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <ProductPhoto image={productImage(product.id)} emoji={product.emoji} tint={product.tint} emojiSize={132} style={styles.hero}>
-          {productImage(product.id) ? null : <View style={[styles.halo, { borderColor: glow(product.tint, 0.55) }]} />}
-          <PricePill label={money(product.price)} style={styles.heroPrice} />
-        </ProductPhoto>
+        <ProductPhoto image={productImage(product.id)} emoji={product.emoji} tint={product.tint} emojiSize={132} style={styles.hero} />
         <View style={styles.pad}>
-          <Text style={styles.brand}>{product.brand}</Text>
-          <Text style={type.title}>{product.name}</Text>
+          <View style={styles.titleRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.brand}>{product.brand}</Text>
+              <Text style={styles.name}>{product.name}</Text>
+              <Price price={product.price} compareAt={product.compareAt} style={styles.price} />
+            </View>
+            <Heart testID="wish" on={wished(product.id)} onPress={() => toggleWishlist(product.id)} size={24} />
+          </View>
+
+          <View style={styles.duo}>
+            <Pressable
+              testID="style-item"
+              accessibilityRole="button"
+              style={[styles.duoBtn, styles.duoLight]}
+              onPress={() => router.push({ pathname: '/look', params: { anchor: product.id } })}
+            >
+              <Ionicons name="sparkles-outline" size={16} color={colors.ink} />
+              <Text style={styles.duoLightText}>Style this item</Text>
+            </Pressable>
+            <Pressable
+              testID="own-item"
+              accessibilityRole="button"
+              accessibilityState={{ selected: owns(product.id) }}
+              style={[styles.duoBtn, styles.duoLight, owns(product.id) && { backgroundColor: colors.greenSoft }]}
+              onPress={() => setOwned(product.id, !owns(product.id))}
+            >
+              <Ionicons name={owns(product.id) ? 'checkmark-circle' : 'shirt-outline'} size={16} color={owns(product.id) ? colors.green : colors.ink} />
+              <Text style={[styles.duoLightText, owns(product.id) && { color: colors.green }]}>{owns(product.id) ? 'In your closet' : 'I own this'}</Text>
+            </Pressable>
+          </View>
 
           <View style={{ height: 14 }} />
           <StatTrio
@@ -56,6 +91,12 @@ export default function ProductDetail() {
           />
 
           <Text style={[type.body, { marginTop: 16, lineHeight: 22, color: colors.muted }]}>{product.description}</Text>
+          <View style={{ marginTop: 8 }}>
+            <DetailRow label="Brand" value={product.brand} />
+            <DetailRow label="Category" value={product.category} />
+            <DetailRow label="Color" value={product.color} />
+            <DetailRow label="Wear it for" value={product.occasions.map((o) => OCCASION_LABEL[o]).join(', ')} />
+          </View>
 
           {product.pickupPerk ? (
             <Card style={styles.perk}>
@@ -114,19 +155,35 @@ export default function ProductDetail() {
             style={{ marginTop: 10 }}
             variant="secondary"
             icon="cube-outline"
-            label={`Ship to me instead · +${money(SHIPPING_FEE)}`}
+            label={`Ship to me instead · +${money(SHIPPING_FEE)} insured`}
             onPress={() => add('ship')}
           />
           <Text style={[type.small, { textAlign: 'center', marginTop: 8 }]}>Pickup is free. Shipping takes 3–5 days.</Text>
+
 
           {added ? (
             <Card style={styles.toast}>
               <Ionicons name="checkmark-circle" size={20} color={colors.green} />
               <Text style={{ flex: 1, color: colors.ink, fontWeight: '600' }}>{added}</Text>
               <Pressable testID="go-cart" accessibilityRole="button" onPress={() => router.navigate('/cart')}>
-                <Text style={{ color: colors.ink, fontWeight: '800', textDecorationLine: 'underline' }}>View cart</Text>
+                <Text style={{ color: colors.ink, fontWeight: '700', textDecorationLine: 'underline' }}>View bag</Text>
               </Pressable>
             </Card>
+          ) : null}
+
+          {similar.length ? (
+            <>
+              <Text style={styles.section}>Similar nearby</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+                {similar.map((p) => (
+                  <Pressable key={p.id} testID={`similar-${p.id}`} accessibilityRole="button" accessibilityLabel={`${p.brand} ${p.name}`} onPress={() => router.push(`/product/${p.id}`)} style={{ width: 132 }}>
+                    <Thumb id={p.id} size={132} />
+                    <Text style={styles.simBrand} numberOfLines={1}>{p.brand}</Text>
+                    <Text style={type.small} numberOfLines={1}>{p.name}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </>
           ) : null}
         </View>
       </ScrollView>
@@ -135,17 +192,23 @@ export default function ProductDetail() {
 }
 
 const styles = StyleSheet.create({
-  hero: { width: '100%', aspectRatio: 1, maxHeight: 420 },
-  halo: { position: 'absolute', width: 230, height: 230, borderRadius: 115, borderWidth: 3 },
-  heroPrice: { position: 'absolute', bottom: 16, alignSelf: 'center' },
-  pad: { padding: space.lg, gap: 0 },
-  brand: { fontSize: 13, fontWeight: '600', color: colors.muted, marginBottom: 2 },
+  hero: { width: '100%', aspectRatio: 1, maxHeight: 460 },
+  pad: { padding: space.lg },
+  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  brand: { fontSize: 18, fontWeight: '700', color: colors.ink },
+  name: { fontSize: 15, color: colors.muted, marginTop: 2 },
+  price: { fontSize: 15, marginTop: 8 },
+  duo: { flexDirection: 'row', gap: 8, marginTop: 16 },
+  duoBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 13, borderRadius: radius.pill },
+  duoLight: { backgroundColor: colors.raised },
+  duoLightText: { fontSize: 14, fontWeight: '500', color: colors.ink },
   perk: { flexDirection: 'row', gap: 12, marginTop: 16, backgroundColor: colors.amberSoft, borderColor: 'transparent' },
-  perkTitle: { fontWeight: '800', color: colors.ink, marginBottom: 2 },
+  perkTitle: { fontWeight: '700', color: colors.ink, marginBottom: 2 },
   perkBody: { color: colors.ink, lineHeight: 20 },
-  section: { ...type.h2, marginTop: 24, marginBottom: 10 },
+  section: { ...type.h2, marginTop: 26, marginBottom: 10 },
   store: { flexDirection: 'row', gap: 12, padding: 14, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, marginBottom: 8 },
-  storeName: { fontSize: 15, fontWeight: '700', color: colors.ink },
-  exp: { marginTop: 8, fontSize: 13, color: colors.amber, fontWeight: '700' },
+  storeName: { fontSize: 15, fontWeight: '600', color: colors.ink },
+  exp: { marginTop: 8, fontSize: 13, color: colors.amber, fontWeight: '600' },
   toast: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16, padding: 14 },
+  simBrand: { fontSize: 13, fontWeight: '600', color: colors.ink, marginTop: 6 },
 });

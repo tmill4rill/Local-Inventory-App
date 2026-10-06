@@ -2,21 +2,25 @@
 
 Shop it online. Go get it in person.
 
-A mobile shopping app (iOS / Android / web, built with Expo + React Native) that shows **only inventory
-on the shelves of stores near you**. Instead of shipping to a doorstep, the checkout nudges you to
-*reserve online and pick up in person* — because the store visit is the experience: a stylist fitting, a
-guided device setup, a shade match, a trail-pack fit.
+A mobile app (iOS / Android / web, built with Expo + React Native) for **high-end fashion that is on the
+shelves of boutiques and department stores near you**. It works like a personal stylist, after the Alta app:
+it suggests outfits for your day, but builds them only from pieces you can go and pick up in person, ideally
+all from one store.
 
-## What's in the MVP
+## What's in it
 
 | Idea | How it works |
 | --- | --- |
-| **Local-only inventory** | Discover shows items stocked at stores within your range, nearest store first, with stock levels ("Only 2 left"). |
-| **Set how far you'll go** | Pickup radius slider (1–40 mi, or km) on Discover and in *Me*. Items beyond it are hidden, with a one-tap "Extend to N mi" nudge. Filter by store type: mall, department store, brand store, specialty shop. |
-| **Elevated in-store moment** | Every store has a signature experience, and many products have a "pickup perk" (free hemming, setup session, shade match…) shown on the product page and at checkout. |
-| **Pickup, not shipping** | Reserve for pickup is the primary action and is free. Ship-to-me is available as the secondary option (+$7.99). Pick an hourly time slot within store hours. |
-| **Pickup code** | Each order gets a ticket-style code (`LP-XXXXX`), directions, and a status tracker. |
-| **Go with a friend** | After ordering, pick friends and send an invite (store, time, address, code) through the native share sheet — or the clipboard on web. |
+| **Today** | A week strip of your planned looks, the day's weather, and suggested looks for work, dinner, weekend and events, built from nearby stock. Looks you can collect in one stop say so. Save a look to any day, or reserve every piece for pickup in one tap. |
+| **Look builder** | Dark outfit editor (after Alta's): pick a piece per slot from nearby stock or your closet, hide slots, choose the day, then save or reserve. "Style this item" on a product opens it around that piece. |
+| **Stylist** | "How can I style you?" chat. Reads occasion, colours and budget from your message and answers with a look from nearby stock or from your closet. It runs on the device (keyword rules over the catalog), not a language model. |
+| **Closet, Wishlist, Looks** | Picked-up pieces land in your closet automatically; "I own this" adds anything else. Heart pieces to keep them in the wishlist. |
+| **Local-only inventory** | Shop shows only items stocked within your range (1-40 mi or km), with stock levels, range levels with item counts, and filters for category, store type, open now and pickup perks. |
+| **Pickup first** | Reserve for pickup is free and primary; insured shipping is secondary. Hourly slots within store hours, a ticket-style pickup code, status tracking, and an invite to bring a friend. |
+
+The catalog is 32 pieces from fictional houses (Maison Ardent, Calder & Wren, Okoro Studio, Sabine Roux,
+Vell, Atelier Nord). Product photos were generated with Higgsfield (GPT Image 2.5) as unbranded packshots on
+the same pale warm gray as the app's tiles, and are bundled in `assets/products/`.
 
 ## Run it
 
@@ -29,7 +33,7 @@ npx expo start          # scan the QR code with Expo Go, or press i / a / w
 
 ```bash
 npm run typecheck       # tsc
-npm test                # unit tests: distance, radius filtering, pickup slots, inventory rules
+npm test                # unit tests: distance, radius, pickup slots, inventory, look building, stylist parsing
 
 npx expo export --platform web
 node e2e/smoke.mjs [screenshotDir]   # drives the full journey in headless Chromium (phone viewport)

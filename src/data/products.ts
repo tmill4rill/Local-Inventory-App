@@ -1,11 +1,20 @@
 import type { Category } from './stores';
 
+export type Occasion = 'work' | 'evening' | 'weekend' | 'event';
+
 export type Product = {
   id: string;
   name: string;
   brand: string;
   category: Category;
+  color: string;
   price: number;
+  /** Original price when the piece is marked down. */
+  compareAt?: number;
+  /** Occasions the stylist reaches for this piece. */
+  occasions: Occasion[];
+  /** Pieces that only make sense when it's cold, e.g. heavy coats and knits. */
+  warm?: boolean;
   emoji: string;
   tint: string;
   description: string;
@@ -13,35 +22,64 @@ export type Product = {
   pickupPerk?: string;
 };
 
-export const CATEGORIES: Category[] = ['Tech', 'Fashion', 'Beauty', 'Home', 'Outdoors', 'Gifts'];
+export const CATEGORIES: Category[] = ['Outerwear', 'Tops', 'Dresses', 'Bottoms', 'Shoes', 'Bags', 'Jewelry', 'Accessories'];
 
-export const SHIPPING_FEE = 7.99;
+export const OCCASION_LABEL: Record<Occasion, string> = {
+  work: 'Work',
+  evening: 'Evening',
+  weekend: 'Weekend',
+  event: 'Event',
+};
+
+export const SHIPPING_FEE = 25;
+
+const W: Occasion[] = ['work'];
+const E: Occasion[] = ['evening'];
+const K: Occasion[] = ['weekend'];
 
 export const PRODUCTS: Product[] = [
-  { id: 'p-laptop', name: 'Slate 14 Laptop', brand: 'Orchard', category: 'Tech', price: 1299, emoji: '💻', tint: '#DCE6F2', description: 'Featherweight 14-inch laptop with an all-day battery and a studio-grade display.', pickupPerk: 'Specialist transfers your files and sets up your accounts at the Studio.' },
-  { id: 'p-phone', name: 'Orchard Phone 9', brand: 'Orchard', category: 'Tech', price: 899, emoji: '📱', tint: '#E3DCF2', description: 'Pro-grade camera, two-day battery, and a titanium frame.', pickupPerk: 'Free case fitting and screen protector installed while you wait.' },
-  { id: 'p-earbuds', name: 'Hush ANC Earbuds', brand: 'Sonar', category: 'Tech', price: 179, emoji: '🎧', tint: '#D9EBE4', description: 'Adaptive noise cancelling with a pocket-size charging case.', pickupPerk: 'Try three tip sizes and compare noise cancelling in the demo booth.' },
-  { id: 'p-watch', name: 'Pulse Watch', brand: 'Orchard', category: 'Tech', price: 399, emoji: '⌚', tint: '#F2E1D9', description: 'Fitness and sleep tracking with a bright always-on display.', pickupPerk: 'Get your strap sized and a 15-minute setup walkthrough.' },
-  { id: 'p-speaker', name: 'Drift Bluetooth Speaker', brand: 'Sonar', category: 'Tech', price: 129, emoji: '🔊', tint: '#E9E3D3', description: 'Waterproof, 18-hour speaker with surprisingly big sound.' },
-  { id: 'p-trench', name: 'Waxed Trench Coat', brand: 'Harlow', category: 'Fashion', price: 340, emoji: '🧥', tint: '#EAD9C4', description: 'Water-resistant cotton trench with a removable liner.', pickupPerk: 'Try it on in a fitting suite — free sleeve hemming within the week.' },
-  { id: 'p-sneakers', name: 'Court Leather Sneakers', brand: 'Marlow', category: 'Fashion', price: 148, emoji: '👟', tint: '#E8E8E4', description: 'Minimal full-grain leather sneakers that break in beautifully.', pickupPerk: 'Walk a lap in both sizes before you commit.' },
-  { id: 'p-dress', name: 'Linen Wrap Dress', brand: 'Harlow', category: 'Fashion', price: 168, emoji: '👗', tint: '#F2D9DE', description: 'Breathable linen wrap dress in a flattering midi length.', pickupPerk: 'Complimentary hem while you have a coffee.' },
-  { id: 'p-bag', name: 'Everyday Leather Tote', brand: 'Marlow', category: 'Fashion', price: 225, emoji: '👜', tint: '#E4D4C2', description: 'Structured tote with a zip pocket and room for a 14-inch laptop.' },
-  { id: 'p-sunglasses', name: 'Tortoise Sunglasses', brand: 'Marlow', category: 'Fashion', price: 120, emoji: '🕶️', tint: '#D8D5CC', description: 'Polarized acetate frames in classic tortoise.', pickupPerk: 'Free fit adjustment so they sit right.' },
-  { id: 'p-serum', name: 'Daylight Vitamin C Serum', brand: 'Lumen', category: 'Beauty', price: 62, emoji: '🧴', tint: '#F6E6C8', description: 'Brightening serum that layers under sunscreen.', pickupPerk: 'Patch-test and sample two textures at the sample bar.' },
-  { id: 'p-foundation', name: 'Skin Tint Foundation', brand: 'Lumen', category: 'Beauty', price: 44, emoji: '💄', tint: '#F4DAD6', description: 'Buildable skin tint in 40 shades.', pickupPerk: 'Ten-minute shade match so you leave with the right one.' },
-  { id: 'p-perfume', name: 'Cedar & Smoke Eau de Parfum', brand: 'Lumen', category: 'Beauty', price: 118, emoji: '🌫️', tint: '#E1DAD0', description: 'A woody, warm scent with a trace of bergamot.', pickupPerk: 'Smell it on skin and in the scent library before you take it.' },
-  { id: 'p-diffuser', name: 'Stoneware Reed Diffuser', brand: 'Kiln & Thread', category: 'Home', price: 54, emoji: '🪔', tint: '#E6E0D6', description: 'Hand-glazed stoneware vessel with a fig-leaf scent.' },
-  { id: 'p-blanket', name: 'Chunky Wool Throw', brand: 'Kiln & Thread', category: 'Home', price: 139, emoji: '🧶', tint: '#EBD5D1', description: 'Heavy hand-woven throw in oatmeal.', pickupPerk: 'Take it for a swatch test against your own sofa colour.' },
-  { id: 'p-mugs', name: 'Glazed Mug Set (4)', brand: 'Kiln & Thread', category: 'Home', price: 76, emoji: '☕', tint: '#D8E4E2', description: 'Four wheel-thrown mugs in speckled glaze.', pickupPerk: 'Pick your own four glazes from the shelf.' },
-  { id: 'p-lamp', name: 'Arc Table Lamp', brand: 'Hale', category: 'Home', price: 185, emoji: '💡', tint: '#F3E5C6', description: 'Brushed brass arc lamp with a linen shade.', pickupPerk: 'See it lit in a room setting.' },
-  { id: 'p-tent', name: 'Two-Person Trail Tent', brand: 'Northwind', category: 'Outdoors', price: 289, emoji: '⛺', tint: '#D8E6D4', description: 'Three-season freestanding tent, 3 lb 14 oz.', pickupPerk: 'Staff pitch it for you once so you know the setup.' },
-  { id: 'p-pack', name: '45L Trekking Pack', brand: 'Northwind', category: 'Outdoors', price: 219, emoji: '🎒', tint: '#E0D8C8', description: 'Adjustable-torso pack with a rain cover.', pickupPerk: 'Fitted with real weight to your frame.' },
-  { id: 'p-boots', name: 'Ridge Hiking Boots', brand: 'Northwind', category: 'Outdoors', price: 198, emoji: '🥾', tint: '#E4D7C7', description: 'Waterproof leather boots with a grippy sole.', pickupPerk: 'Try on on the incline ramp and get free boot lacing.' },
-  { id: 'p-bottle', name: 'Insulated Bottle 32oz', brand: 'Northwind', category: 'Outdoors', price: 38, emoji: '🧊', tint: '#D5E5EC', description: 'Keeps drinks cold for 24 hours.' },
-  { id: 'p-candle', name: 'Fig & Amber Candle', brand: 'Lumen', category: 'Gifts', price: 36, emoji: '🕯️', tint: '#F3DFC9', description: 'Hand-poured soy candle with a 50-hour burn.', pickupPerk: 'Complimentary gift wrap at the lounge.' },
-  { id: 'p-board', name: 'Walnut Serving Board', brand: 'Kiln & Thread', category: 'Gifts', price: 68, emoji: '🪵', tint: '#E3D2BE', description: 'Hand-oiled walnut board with a leather loop.', pickupPerk: 'Free monogram burned in while you wait.' },
-  { id: 'p-plant', name: 'Fiddle Leaf Fig (Medium)', brand: 'Garden', category: 'Home', price: 59, emoji: '🌿', tint: '#D5E6D0', description: 'Healthy 3-foot fiddle leaf fig in a nursery pot.', pickupPerk: 'A care card and a minute with the plant doctor.' },
+  // Outerwear
+  { id: 'o-cashmere-coat', name: 'Double-Faced Cashmere Coat', brand: 'Maison Ardent', category: 'Outerwear', color: 'Camel', price: 2890, occasions: [...W, ...E, ...K], warm: true, emoji: '🧥', tint: '#E8D9C3', description: 'Unlined double-faced cashmere with dropped shoulders and a long, easy line.', pickupPerk: 'Sleeves and hem marked in the fitting suite; finished within the week.' },
+  { id: 'o-trench', name: 'Gabardine Trench', brand: 'Calder & Wren', category: 'Outerwear', color: 'Stone', price: 1950, occasions: [...W, ...K], emoji: '🧥', tint: '#E6DCC8', description: 'Cotton gabardine trench with storm flap, horn buttons and a self-tie belt.', pickupPerk: 'Try it over what you are wearing; free sleeve hemming.' },
+  { id: 'o-biker', name: 'Lambskin Biker Jacket', brand: 'Okoro Studio', category: 'Outerwear', color: 'Black', price: 3200, compareAt: 3900, occasions: [...E, ...K], emoji: '🧥', tint: '#D9D9D9', description: 'Buttery lambskin with an asymmetric zip, belted waist and silver hardware.', pickupPerk: 'Leather care kit and a fit check with the studio tailor.' },
+  { id: 'o-blazer', name: 'Double-Breasted Wool Blazer', brand: 'Sabine Roux', category: 'Outerwear', color: 'Black', price: 1480, occasions: [...W, ...E], emoji: '🧥', tint: '#DADADA', description: 'Sharp-shouldered wool blazer with peak lapels and a nipped waist.', pickupPerk: 'Sleeve length adjusted on the spot.' },
+  { id: 'o-boucle', name: 'Bouclé Tweed Jacket', brand: 'Vell', category: 'Outerwear', color: 'Ivory', price: 2350, occasions: [...W, 'event'], emoji: '🧥', tint: '#EFEAE0', description: 'Cropped bouclé tweed jacket with fringed edges and gilt buttons.' },
+  // Tops
+  { id: 't-silk-blouse', name: 'Silk Charmeuse Blouse', brand: 'Vell', category: 'Tops', color: 'Ivory', price: 690, occasions: [...W, ...E], emoji: '👚', tint: '#F1ECE2', description: 'Fluid silk charmeuse with a soft collar and covered buttons.' },
+  { id: 't-cashmere-turtle', name: 'Cashmere Turtleneck', brand: 'Atelier Nord', category: 'Tops', color: 'Black', price: 890, occasions: [...W, ...E, ...K], warm: true, emoji: '🧶', tint: '#DCDCDC', description: 'Fine-gauge cashmere turtleneck that layers under everything.' },
+  { id: 't-poplin', name: 'Cotton Poplin Shirt', brand: 'Calder & Wren', category: 'Tops', color: 'White', price: 420, occasions: [...W, ...K], emoji: '👔', tint: '#F2F2F2', description: 'Crisp oversized poplin shirt with a curved hem.' },
+  { id: 't-knit-tank', name: 'Ribbed Knit Tank', brand: 'Okoro Studio', category: 'Tops', color: 'Cream', price: 310, occasions: [...K, ...E], emoji: '🎽', tint: '#F3EEE3', description: 'Close-fitting rib tank in a silk-cotton blend.' },
+  { id: 't-cable-knit', name: 'Cable Cashmere Crewneck', brand: 'Atelier Nord', category: 'Tops', color: 'Oatmeal', price: 1150, occasions: [...K, ...W], warm: true, emoji: '🧶', tint: '#E9E1D3', description: 'Chunky cable-knit cashmere with a relaxed body.', pickupPerk: 'Feel three cashmere weights side by side before you choose.' },
+  // Dresses
+  { id: 'd-slip', name: 'Bias-Cut Silk Slip Dress', brand: 'Sabine Roux', category: 'Dresses', color: 'Champagne', price: 1290, occasions: [...E, 'event'], emoji: '👗', tint: '#EFE4D2', description: 'Bias-cut silk satin with fine straps and a midi hem.', pickupPerk: 'Hem pinned to your heel height in the fitting suite.' },
+  { id: 'd-column', name: 'Crepe Column Gown', brand: 'Maison Ardent', category: 'Dresses', color: 'Black', price: 3400, occasions: ['event', ...E], emoji: '👗', tint: '#D6D6D6', description: 'Floor-length crepe column with a sculpted one-shoulder neckline.', pickupPerk: 'Private fitting with a stylist and complimentary steaming.' },
+  { id: 'd-knit-midi', name: 'Fine-Knit Midi Dress', brand: 'Vell', category: 'Dresses', color: 'Chocolate', price: 980, compareAt: 1250, occasions: [...W, ...K], warm: true, emoji: '👗', tint: '#E2D5C8', description: 'Body-skimming fine knit with long sleeves and a funnel neck.' },
+  // Bottoms
+  { id: 'b-wide-trouser', name: 'Wool Wide-Leg Trousers', brand: 'Sabine Roux', category: 'Bottoms', color: 'Charcoal', price: 780, occasions: [...W, ...E], emoji: '👖', tint: '#DEDEDE', description: 'High-waisted wool trousers with front pleats and a pooling hem.', pickupPerk: 'Hemmed to your shoes while you wait.' },
+  { id: 'b-pleated-skirt', name: 'Pleated Satin Midi Skirt', brand: 'Vell', category: 'Bottoms', color: 'Black', price: 890, occasions: [...E, ...W], emoji: '👗', tint: '#D9D9D9', description: 'Knife-pleated satin midi skirt that moves when you walk.' },
+  { id: 'b-denim', name: 'Straight-Leg Selvedge Jeans', brand: 'Okoro Studio', category: 'Bottoms', color: 'Indigo', price: 360, occasions: [...K], emoji: '👖', tint: '#D8DEE6', description: 'Rigid selvedge denim in a clean straight leg.', pickupPerk: 'Free chain-stitch hemming in the studio.' },
+  { id: 'b-leather-pant', name: 'Leather Straight Pants', brand: 'Okoro Studio', category: 'Bottoms', color: 'Black', price: 1850, occasions: [...E, ...K], emoji: '👖', tint: '#D5D5D5', description: 'Supple leather trousers with a straight, ankle-grazing leg.' },
+  // Shoes
+  { id: 's-slingback', name: 'Pointed Slingback Pumps', brand: 'Maison Ardent', category: 'Shoes', color: 'Black patent', price: 850, occasions: [...W, ...E, 'event'], emoji: '👠', tint: '#DCDCDC', description: 'Patent slingbacks on a slim 70mm heel.', pickupPerk: 'Walk the salon in two sizes before you decide.' },
+  { id: 's-loafer', name: 'Leather Penny Loafers', brand: 'Calder & Wren', category: 'Shoes', color: 'Black', price: 790, occasions: [...W, ...K], emoji: '👞', tint: '#DBDBDB', description: 'Polished calf loafers on a lightly lugged sole.' },
+  { id: 's-ankle-boot', name: 'Suede Ankle Boots', brand: 'Sabine Roux', category: 'Shoes', color: 'Chocolate', price: 1190, occasions: [...W, ...K, ...E], warm: true, emoji: '👢', tint: '#E1D4C6', description: 'Soft suede ankle boots with an almond toe and block heel.' },
+  { id: 's-sneaker', name: 'Low Leather Sneakers', brand: 'Atelier Nord', category: 'Shoes', color: 'White', price: 590, occasions: [...K], emoji: '👟', tint: '#EEEEEE', description: 'Minimal Italian leather sneakers with a slim cupsole.', pickupPerk: 'Try both sizes on the salon runway.' },
+  { id: 's-sandal', name: 'Strappy Heeled Sandals', brand: 'Vell', category: 'Shoes', color: 'Gold', price: 820, occasions: [...E, 'event'], emoji: '👡', tint: '#EFE5CF', description: 'Barely-there metallic straps on an 85mm heel.' },
+  // Bags
+  { id: 'g-top-handle', name: 'Structured Top-Handle Bag', brand: 'Maison Ardent', category: 'Bags', color: 'Black', price: 3600, occasions: [...W, ...E, 'event'], emoji: '👜', tint: '#D8D8D8', description: 'Box-calf top-handle bag with a detachable strap.', pickupPerk: 'Complimentary monogram and dust bag at the boutique.' },
+  { id: 'g-tote', name: 'Grained Leather Tote', brand: 'Calder & Wren', category: 'Bags', color: 'Cognac', price: 2150, occasions: [...W, ...K], emoji: '👜', tint: '#E8D6C2', description: 'Roomy grained-leather tote that fits a laptop.' },
+  { id: 'g-crescent', name: 'Soft Crescent Shoulder Bag', brand: 'Okoro Studio', category: 'Bags', color: 'Butter', price: 2900, compareAt: 3400, occasions: [...K, ...E], emoji: '👝', tint: '#F1E8CF', description: 'Slouchy crescent bag in supple nappa leather.' },
+  { id: 'g-clutch', name: 'Satin Evening Clutch', brand: 'Sabine Roux', category: 'Bags', color: 'Champagne', price: 1100, occasions: [...E, 'event'], emoji: '👛', tint: '#EFE6D6', description: 'Satin frame clutch with a slim chain.' },
+  // Jewelry
+  { id: 'j-hoops', name: 'Gold Dome Hoops', brand: 'Vell', category: 'Jewelry', color: 'Gold', price: 640, occasions: [...W, ...E, ...K, 'event'], emoji: '💛', tint: '#F1E6C8', description: 'Chunky 18k gold-plated dome hoops.' },
+  { id: 'j-pearls', name: 'Freshwater Pearl Necklace', brand: 'Maison Ardent', category: 'Jewelry', color: 'Pearl', price: 1350, occasions: [...W, 'event'], emoji: '📿', tint: '#F2EFE8', description: 'Hand-knotted freshwater pearls with a gold clasp.', pickupPerk: 'Length adjusted by the in-house jeweler.' },
+  { id: 'j-chain', name: 'Gold Link Chain Necklace', brand: 'Vell', category: 'Jewelry', color: 'Gold', price: 980, occasions: [...E, ...K], emoji: '⛓️', tint: '#F0E4C4', description: 'Heavy paperclip-link chain in 18k gold vermeil.' },
+  // Accessories
+  { id: 'a-sunglasses', name: 'Acetate Cat-Eye Sunglasses', brand: 'Okoro Studio', category: 'Accessories', color: 'Black', price: 460, occasions: [...K, ...W], emoji: '🕶️', tint: '#DADADA', description: 'Bold black acetate cat-eye frames with dark lenses.', pickupPerk: 'Free fit adjustment so they sit right.' },
+  { id: 'a-silk-scarf', name: 'Silk Twill Scarf', brand: 'Maison Ardent', category: 'Accessories', color: 'Rust', price: 420, occasions: [...W, ...K], emoji: '🧣', tint: '#ECD9CB', description: 'Hand-rolled silk twill square in rust and cream.' },
+  { id: 'a-belt', name: 'Leather Belt, Gold Buckle', brand: 'Calder & Wren', category: 'Accessories', color: 'Brown', price: 490, occasions: [...W, ...K], emoji: '➰', tint: '#E3D3C3', description: 'Smooth calf belt with a sculpted gold buckle.' },
 ];
 
 export const getProduct = (id: string) => PRODUCTS.find((p) => p.id === id);
+
+export const BRANDS = [...new Set(PRODUCTS.map((p) => p.brand))].sort();

@@ -141,13 +141,13 @@ export default function OrderDetail() {
 
 const styles = StyleSheet.create({
   banner: { flexDirection: 'row', gap: 10, alignItems: 'center', padding: 14, borderRadius: radius.md, backgroundColor: colors.greenSoft },
-  ticket: { backgroundColor: colors.ink, borderRadius: radius.lg, padding: 22, alignItems: 'center' }, // light paper ticket on the black floor
-  ticketLabel: { color: '#5E5E58', fontSize: 13, fontWeight: '700' },
+  ticket: { backgroundColor: colors.ink, borderRadius: radius.lg, padding: 22, alignItems: 'center' }, // black ticket on the white floor
+  ticketLabel: { color: '#A3A39E', fontSize: 13, fontWeight: '600' },
   code: { color: colors.onAccent, fontSize: 40, fontWeight: '800', letterSpacing: 4, marginVertical: 6 },
-  ticketSub: { color: '#5E5E58', fontSize: 13, textAlign: 'center' },
-  perforation: { alignSelf: 'stretch', borderTopWidth: 2, borderStyle: 'dashed', borderColor: '#BDBDB6', marginVertical: 16 },
+  ticketSub: { color: '#A3A39E', fontSize: 13, textAlign: 'center' },
+  perforation: { alignSelf: 'stretch', borderTopWidth: 2, borderStyle: 'dashed', borderColor: '#3A3A38', marginVertical: 16 },
   ticketStore: { color: colors.onAccent, fontSize: 18, fontWeight: '800', textAlign: 'center' },
-  ticketWhen: { color: colors.onAccent, fontSize: 16, fontWeight: '800', marginTop: 8, paddingVertical: 4, paddingHorizontal: 12, borderRadius: 999, backgroundColor: '#E2E2DC', overflow: 'hidden' },
+  ticketWhen: { color: colors.ink, fontSize: 15, fontWeight: '700', marginTop: 10, paddingVertical: 5, paddingHorizontal: 14, borderRadius: 999, backgroundColor: colors.bg, overflow: 'hidden' },
   dot: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.raised },
   line: { flex: 1, height: 2, backgroundColor: colors.border, marginTop: 11 },
   stepText: { fontSize: 11, color: colors.muted, marginTop: 6, textAlign: 'center' },
