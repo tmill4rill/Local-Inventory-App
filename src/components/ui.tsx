@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View, type ImageSourcePropType, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { colors, glow, radius, space } from '../theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -134,7 +134,7 @@ export function ProductPhoto({
   style,
   children,
 }: {
-  image?: string;
+  image?: ImageSourcePropType;
   emoji: string;
   tint: string;
   emojiSize: number;
@@ -146,7 +146,7 @@ export function ProductPhoto({
   return (
     <View style={[{ alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: showPhoto ? colors.bg : glow(tint, 0.18) }, style]}>
       {showPhoto ? (
-        <Image source={{ uri: image }} onError={() => setFailed(true)} resizeMode="cover" style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors />
+        <Image source={image!} onError={() => setFailed(true)} resizeMode="cover" style={styles.photo} accessibilityIgnoresInvertColors />
       ) : (
         <Text style={{ fontSize: emojiSize }}>{emoji}</Text>
       )}
@@ -155,7 +155,7 @@ export function ProductPhoto({
   );
 }
 
-export function ProductArt({ emoji, tint, image, size = 96, style }: { emoji: string; tint: string; image?: string; size?: number; style?: StyleProp<ViewStyle> }) {
+export function ProductArt({ emoji, tint, image, size = 96, style }: { emoji: string; tint: string; image?: ImageSourcePropType; size?: number; style?: StyleProp<ViewStyle> }) {
   return <ProductPhoto image={image} emoji={emoji} tint={tint} emojiSize={size * 0.5} style={[{ width: size, height: size, borderRadius: radius.md }, style]} />;
 }
 
@@ -179,6 +179,8 @@ export function Label({ children, style }: { children: React.ReactNode; style?: 
 }
 
 const styles = StyleSheet.create({
+  // Explicit 100% sizes: on web, a bundled image otherwise keeps its intrinsic 800px size.
+  photo: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   btn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 15, paddingHorizontal: 18, borderRadius: radius.pill },
   btnText: { fontSize: 16, fontWeight: '700' },
   chip: { flexDirection: 'row', alignItems: 'center', paddingVertical: 7, paddingHorizontal: 13, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, marginRight: space.sm },

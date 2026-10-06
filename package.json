@@ -9,8 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/lib/*.test.ts",
-    "fetch-images": "node scripts/fetch-product-images.mjs"
+    "test": "tsx --test src/lib/*.test.ts"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.16",

@@ -10,6 +10,7 @@ import { availabilityFor, withinRadius } from '../../src/lib/inventory';
 import { isOpenNow } from '../../src/lib/pickup';
 import { useApp } from '../../src/state/AppState';
 import { colors, glow, money, radius, space, type } from '../../src/theme';
+import { productImage } from '../../src/data/productImages';
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,8 +37,8 @@ export default function ProductDetail() {
     <>
       <Stack.Screen options={{ title: product.category }} />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <ProductPhoto image={product.image} emoji={product.emoji} tint={product.tint} emojiSize={132} style={styles.hero}>
-          {product.image ? null : <View style={[styles.halo, { borderColor: glow(product.tint, 0.55) }]} />}
+        <ProductPhoto image={productImage(product.id)} emoji={product.emoji} tint={product.tint} emojiSize={132} style={styles.hero}>
+          {productImage(product.id) ? null : <View style={[styles.halo, { borderColor: glow(product.tint, 0.55) }]} />}
           <PricePill label={money(product.price)} style={styles.heroPrice} />
         </ProductPhoto>
         <View style={styles.pad}>

@@ -6,6 +6,7 @@ import { formatDistance, type DistanceUnit } from '../lib/geo';
 import type { ProductListing } from '../lib/inventory';
 import { colors, money, radius } from '../theme';
 import { PricePill, ProductPhoto } from './ui';
+import { productImage } from '../data/productImages';
 
 /**
  * Gallery-style card: the item sits on black with a faint glow of its own colour,
@@ -24,7 +25,7 @@ export function ProductCard({ listing, unit, dense }: { listing: ProductListing;
       onPress={() => router.push(`/product/${product.id}`)}
       style={({ pressed }) => [styles.card, pressed && { opacity: 0.8 }]}
     >
-      <ProductPhoto image={product.image} emoji={product.emoji} tint={product.tint} emojiSize={dense ? 38 : 60} style={[styles.art, dense && styles.artDense]}>
+      <ProductPhoto image={productImage(product.id)} emoji={product.emoji} tint={product.tint} emojiSize={dense ? 38 : 60} style={[styles.art, dense && styles.artDense]}>
         {low && !dense ? (
           <View style={styles.tag}>
             <Text style={styles.tagText}>Only {nearest.stock} left</Text>

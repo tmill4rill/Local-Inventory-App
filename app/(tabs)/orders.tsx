@@ -7,6 +7,7 @@ import { getStore } from '../../src/data/stores';
 import { formatSlot } from '../../src/lib/pickup';
 import { STATUS_LABEL, useApp } from '../../src/state/AppState';
 import { colors, DOCK_SPACE, money, radius } from '../../src/theme';
+import { productImage } from '../../src/data/productImages';
 
 export default function Orders() {
   const { orders } = useApp();
@@ -28,7 +29,7 @@ export default function Orders() {
         const first = getProduct(o.lines[0].productId);
         return (
           <Pressable testID={`order-${o.id}`} accessibilityRole="button" onPress={() => router.push(`/order/${o.id}`)} style={styles.card}>
-            {first ? <ProductArt emoji={first.emoji} tint={first.tint} image={first.image} size={52} /> : null}
+            {first ? <ProductArt emoji={first.emoji} tint={first.tint} image={productImage(first.id)} size={52} /> : null}
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>{store ? store.name : 'Shipped to you'}</Text>
               <Text style={styles.meta}>

@@ -7,6 +7,7 @@ import { getProduct, SHIPPING_FEE } from '../../src/data/products';
 import { getStore } from '../../src/data/stores';
 import { useApp, type CartLine } from '../../src/state/AppState';
 import { colors, DOCK_SPACE, money, radius, type } from '../../src/theme';
+import { productImage } from '../../src/data/productImages';
 
 export default function Cart() {
   const { cart, setQty, removeLine } = useApp();
@@ -42,7 +43,7 @@ function Line({ line, onQty, onRemove }: { line: CartLine; onQty: (q: number) =>
   const store = line.fulfillment.type === 'pickup' ? getStore(line.fulfillment.storeId) : undefined;
   return (
     <Card style={{ flexDirection: 'row', gap: 12 }}>
-      <ProductArt emoji={product.emoji} image={product.image} tint={product.tint} size={72} />
+      <ProductArt emoji={product.emoji} image={productImage(product.id)} tint={product.tint} size={72} />
       <View style={{ flex: 1 }}>
         <Text style={{ fontWeight: '700', color: colors.ink }}>{product.name}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>

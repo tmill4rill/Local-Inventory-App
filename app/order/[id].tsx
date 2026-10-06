@@ -10,6 +10,7 @@ import { formatSlot } from '../../src/lib/pickup';
 import { inviteMessage, shareText, type ShareResult } from '../../src/lib/share';
 import { FRIENDS, STATUS_LABEL, useApp, type OrderStatus } from '../../src/state/AppState';
 import { colors, money, radius, type } from '../../src/theme';
+import { productImage } from '../../src/data/productImages';
 
 const STEPS: OrderStatus[] = ['placed', 'ready', 'picked_up'];
 
@@ -121,7 +122,7 @@ export default function OrderDetail() {
             const p = getProduct(l.productId);
             return p ? (
               <View key={l.productId} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <ProductArt emoji={p.emoji} image={p.image} tint={p.tint} size={44} />
+                <ProductArt emoji={p.emoji} image={productImage(p.id)} tint={p.tint} size={44} />
                 <Text style={{ flex: 1, fontWeight: '600', color: colors.ink }}>{p.name} × {l.qty}</Text>
                 <Text style={{ fontWeight: '700', color: colors.ink }}>{money(l.price * l.qty)}</Text>
               </View>

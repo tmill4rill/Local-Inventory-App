@@ -1,4 +1,3 @@
-import { PRODUCT_IMAGES } from './productImages';
 import type { Category } from './stores';
 
 export type Product = {
@@ -8,8 +7,6 @@ export type Product = {
   category: Category;
   price: number;
   emoji: string;
-  /** Product photo URL. The emoji stays as the fallback if it fails to load. */
-  image?: string;
   tint: string;
   description: string;
   /** What the in-store handoff adds for this item, shown on the product page. */
@@ -46,7 +43,5 @@ export const PRODUCTS: Product[] = [
   { id: 'p-board', name: 'Walnut Serving Board', brand: 'Kiln & Thread', category: 'Gifts', price: 68, emoji: '🪵', tint: '#E3D2BE', description: 'Hand-oiled walnut board with a leather loop.', pickupPerk: 'Free monogram burned in while you wait.' },
   { id: 'p-plant', name: 'Fiddle Leaf Fig (Medium)', brand: 'Garden', category: 'Home', price: 59, emoji: '🌿', tint: '#D5E6D0', description: 'Healthy 3-foot fiddle leaf fig in a nursery pot.', pickupPerk: 'A care card and a minute with the plant doctor.' },
 ];
-
-for (const p of PRODUCTS) p.image = PRODUCT_IMAGES[p.id];
 
 export const getProduct = (id: string) => PRODUCTS.find((p) => p.id === id);
