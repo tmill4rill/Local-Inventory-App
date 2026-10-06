@@ -4,8 +4,8 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatDistance, type DistanceUnit } from '../lib/geo';
 import type { ProductListing } from '../lib/inventory';
-import { colors, glow, money, radius } from '../theme';
-import { PricePill } from './ui';
+import { colors, money, radius } from '../theme';
+import { PricePill, ProductPhoto } from './ui';
 
 /**
  * Gallery-style card: the item sits on black with a faint glow of its own colour,
@@ -24,15 +24,14 @@ export function ProductCard({ listing, unit, dense }: { listing: ProductListing;
       onPress={() => router.push(`/product/${product.id}`)}
       style={({ pressed }) => [styles.card, pressed && { opacity: 0.8 }]}
     >
-      <View style={[styles.art, dense && styles.artDense, { backgroundColor: glow(product.tint, 0.22) }]}>
-        <Text style={{ fontSize: dense ? 38 : 60 }}>{product.emoji}</Text>
+      <ProductPhoto image={product.image} emoji={product.emoji} tint={product.tint} emojiSize={dense ? 38 : 60} style={[styles.art, dense && styles.artDense]}>
         {low && !dense ? (
           <View style={styles.tag}>
             <Text style={styles.tagText}>Only {nearest.stock} left</Text>
           </View>
         ) : null}
         <PricePill label={money(product.price)} style={[styles.price, dense && styles.priceDense]} />
-      </View>
+      </ProductPhoto>
       {dense ? null : (
         <View style={styles.body}>
           <Text style={styles.name} numberOfLines={2}>
@@ -55,8 +54,8 @@ export function ProductCard({ listing, unit, dense }: { listing: ProductListing;
 
 const styles = StyleSheet.create({
   card: { flex: 1 },
-  art: { height: 168, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  artDense: { height: 112 },
+  art: { aspectRatio: 1, borderRadius: radius.md },
+  artDense: {},
   tag: { position: 'absolute', top: 8, left: 8, backgroundColor: colors.amberSoft, borderRadius: radius.pill, paddingVertical: 3, paddingHorizontal: 8 },
   tagText: { fontSize: 11, fontWeight: '700', color: colors.amber },
   price: { position: 'absolute', bottom: 8, left: 8 },

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Badge, Button, Card, Empty, PricePill, StatTrio } from '../../src/components/ui';
+import { Badge, Button, Card, Empty, PricePill, ProductPhoto, StatTrio } from '../../src/components/ui';
 import { getProduct, SHIPPING_FEE } from '../../src/data/products';
 import { STORE_TYPE_LABEL } from '../../src/data/stores';
 import { formatDistance } from '../../src/lib/geo';
@@ -36,11 +36,10 @@ export default function ProductDetail() {
     <>
       <Stack.Screen options={{ title: product.category }} />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <View style={[styles.hero, { backgroundColor: glow(product.tint, 0.1) }]}>
-          <View style={[styles.halo, { borderColor: glow(product.tint, 0.55), backgroundColor: glow(product.tint, 0.12) }]} />
-          <Text style={{ fontSize: 132 }}>{product.emoji}</Text>
+        <ProductPhoto image={product.image} emoji={product.emoji} tint={product.tint} emojiSize={132} style={styles.hero}>
+          {product.image ? null : <View style={[styles.halo, { borderColor: glow(product.tint, 0.55) }]} />}
           <PricePill label={money(product.price)} style={styles.heroPrice} />
-        </View>
+        </ProductPhoto>
         <View style={styles.pad}>
           <Text style={styles.brand}>{product.brand}</Text>
           <Text style={type.title}>{product.name}</Text>
@@ -135,7 +134,7 @@ export default function ProductDetail() {
 }
 
 const styles = StyleSheet.create({
-  hero: { height: 320, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  hero: { width: '100%', aspectRatio: 1, maxHeight: 420 },
   halo: { position: 'absolute', width: 230, height: 230, borderRadius: 115, borderWidth: 3 },
   heroPrice: { position: 'absolute', bottom: 16, alignSelf: 'center' },
   pad: { padding: space.lg, gap: 0 },

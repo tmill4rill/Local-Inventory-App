@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Badge, Button, Empty } from '../../src/components/ui';
+import { Badge, Button, Empty, ProductArt } from '../../src/components/ui';
 import { getProduct } from '../../src/data/products';
 import { getStore } from '../../src/data/stores';
 import { formatSlot } from '../../src/lib/pickup';
@@ -28,7 +28,7 @@ export default function Orders() {
         const first = getProduct(o.lines[0].productId);
         return (
           <Pressable testID={`order-${o.id}`} accessibilityRole="button" onPress={() => router.push(`/order/${o.id}`)} style={styles.card}>
-            <Text style={{ fontSize: 34 }}>{first?.emoji}</Text>
+            {first ? <ProductArt emoji={first.emoji} tint={first.tint} image={first.image} size={52} /> : null}
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>{store ? store.name : 'Shipped to you'}</Text>
               <Text style={styles.meta}>

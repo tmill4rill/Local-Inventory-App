@@ -58,7 +58,7 @@ export default function StoreDetail() {
         <Text style={[type.h2, { marginTop: 24, marginBottom: 10 }]}>On the shelves ({items.length})</Text>
         {items.map((p) => (
           <Pressable key={p.id} accessibilityRole="button" onPress={() => router.push(`/product/${p.id}`)} style={styles.item}>
-            <ProductArt emoji={p.emoji} tint={p.tint} size={52} />
+            <ProductArt emoji={p.emoji} image={p.image} tint={p.tint} size={52} />
             <View style={{ flex: 1 }}>
               <Text style={{ fontWeight: '700', color: colors.ink }}>{p.name}</Text>
               <Text style={type.small}>{p.brand}</Text>

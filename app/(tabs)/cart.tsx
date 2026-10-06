@@ -42,7 +42,7 @@ function Line({ line, onQty, onRemove }: { line: CartLine; onQty: (q: number) =>
   const store = line.fulfillment.type === 'pickup' ? getStore(line.fulfillment.storeId) : undefined;
   return (
     <Card style={{ flexDirection: 'row', gap: 12 }}>
-      <ProductArt emoji={product.emoji} tint={product.tint} size={72} />
+      <ProductArt emoji={product.emoji} image={product.image} tint={product.tint} size={72} />
       <View style={{ flex: 1 }}>
         <Text style={{ fontWeight: '700', color: colors.ink }}>{product.name}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>

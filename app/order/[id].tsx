@@ -121,7 +121,7 @@ export default function OrderDetail() {
             const p = getProduct(l.productId);
             return p ? (
               <View key={l.productId} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <ProductArt emoji={p.emoji} tint={p.tint} size={44} />
+                <ProductArt emoji={p.emoji} image={p.image} tint={p.tint} size={44} />
                 <Text style={{ flex: 1, fontWeight: '600', color: colors.ink }}>{p.name} × {l.qty}</Text>
                 <Text style={{ fontWeight: '700', color: colors.ink }}>{money(l.price * l.qty)}</Text>
               </View>

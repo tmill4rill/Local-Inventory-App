@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import React, { useState } from 'react';
+import { Image, Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { colors, glow, radius, space } from '../theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -125,12 +125,38 @@ export function Card({ children, style }: { children: React.ReactNode; style?: S
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-export function ProductArt({ emoji, tint, size = 96, style }: { emoji: string; tint: string; size?: number; style?: StyleProp<ViewStyle> }) {
+/** Product photo when there is one; falls back to the emoji on a tinted tile if it is missing or fails to load. */
+export function ProductPhoto({
+  image,
+  emoji,
+  tint,
+  emojiSize,
+  style,
+  children,
+}: {
+  image?: string;
+  emoji: string;
+  tint: string;
+  emojiSize: number;
+  style?: StyleProp<ViewStyle>;
+  children?: React.ReactNode;
+}) {
+  const [failed, setFailed] = useState(false);
+  const showPhoto = !!image && !failed;
   return (
-    <View style={[{ width: size, height: size, borderRadius: radius.md, backgroundColor: glow(tint, 0.16), alignItems: 'center', justifyContent: 'center' }, style]}>
-      <Text style={{ fontSize: size * 0.5 }}>{emoji}</Text>
+    <View style={[{ alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: showPhoto ? colors.bg : glow(tint, 0.18) }, style]}>
+      {showPhoto ? (
+        <Image source={{ uri: image }} onError={() => setFailed(true)} resizeMode="cover" style={StyleSheet.absoluteFill} accessibilityIgnoresInvertColors />
+      ) : (
+        <Text style={{ fontSize: emojiSize }}>{emoji}</Text>
+      )}
+      {children}
     </View>
   );
+}
+
+export function ProductArt({ emoji, tint, image, size = 96, style }: { emoji: string; tint: string; image?: string; size?: number; style?: StyleProp<ViewStyle> }) {
+  return <ProductPhoto image={image} emoji={emoji} tint={tint} emojiSize={size * 0.5} style={[{ width: size, height: size, borderRadius: radius.md }, style]} />;
 }
 
 export function Empty({ icon, title, body, children }: { icon: IconName; title: string; body: string; children?: React.ReactNode }) {
