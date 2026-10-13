@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View, type ImageSourcePropType, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { getProduct } from '../data/products';
-import { productImage } from '../data/productImages';
+import { photoColor, productImage } from '../data/productImages';
 import { colors, glow, radius, space, type } from '../theme';
 
 export type IconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -139,7 +139,7 @@ export function ProductPhoto({
   const [failed, setFailed] = useState(false);
   const showPhoto = !!image && !failed;
   return (
-    <View style={[{ alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: showPhoto ? colors.tile : glow(tint) }, style]}>
+    <View style={[{ alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: showPhoto ? photoColor(image) ?? colors.tile : glow(tint) }, style]}>
       {showPhoto ? (
         <Image source={image!} onError={() => setFailed(true)} resizeMode="cover" style={styles.photo} accessibilityIgnoresInvertColors />
       ) : (

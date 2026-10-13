@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Badge, Button, Card, DetailRow, Empty, Heart, Price, ProductPhoto, StatTrio, Thumb } from '../../src/components/ui';
 import { getProduct, OCCASION_LABEL, PRODUCTS, SHIPPING_FEE } from '../../src/data/products';
 import { STORE_TYPE_LABEL } from '../../src/data/stores';
@@ -10,7 +10,9 @@ import { availabilityFor, withinRadius } from '../../src/lib/inventory';
 import { isOpenNow } from '../../src/lib/pickup';
 import { useApp } from '../../src/state/AppState';
 import { colors, money, radius, space, type } from '../../src/theme';
-import { productImage } from '../../src/data/productImages';
+import { onColor, productColor, productImage } from '../../src/data/productImages';
+import { productClip } from '../../src/data/productClips';
+import { Float, PreviewVideo, Reveal, Spin } from '../../src/motion';
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -18,6 +20,8 @@ export default function ProductDetail() {
   const { place, radiusMi, unit, setRadiusMi, addToCart, wished, toggleWishlist, owns, setOwned } = useApp();
   const [chosen, setChosen] = useState<string | undefined>();
   const [added, setAdded] = useState<string | null>(null);
+  const [paused, setPaused] = useState(false);
+  const clip = product ? productClip(product.id) : undefined;
 
   const all = useMemo(() => (product ? availabilityFor(product, place.coord) : []), [product, place]);
   const nearby = useMemo(() => withinRadius(all, radiusMi), [all, radiusMi]);
@@ -47,8 +51,39 @@ export default function ProductDetail() {
     <>
       <Stack.Screen options={{ title: product.category }} />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <ProductPhoto image={productImage(product.id)} emoji={product.emoji} tint={product.tint} emojiSize={132} style={styles.hero} />
-        <View style={styles.pad}>
+        {(() => {
+          const bg = clip?.bg ?? productColor(product.id) ?? colors.tile;
+          const fg = onColor(bg);
+          const img = productImage(product.id);
+          return (
+            <Pressable
+              testID={clip ? 'clip-toggle' : undefined}
+              disabled={!clip}
+              accessibilityRole={clip ? 'button' : undefined}
+              accessibilityLabel={clip ? (paused ? 'Play preview' : 'Pause preview') : undefined}
+              onPress={() => setPaused((p) => !p)}
+              style={[styles.hero, { backgroundColor: bg }]}
+            >
+              {clip ? (
+                <PreviewVideo testID="product-clip" source={clip.video} webm={clip.webm} poster={clip.poster} paused={paused} style={StyleSheet.absoluteFill} />
+              ) : img ? (
+                <Float amplitude={8} period={3600} style={StyleSheet.absoluteFill}>
+                  <Image source={img} style={styles.heroImg} resizeMode="contain" accessibilityIgnoresInvertColors />
+                </Float>
+              ) : (
+                <ProductPhoto image={undefined} emoji={product.emoji} tint={product.tint} emojiSize={132} style={StyleSheet.absoluteFill} />
+              )}
+              <Spin period={24000} style={[styles.ring, { borderColor: fg === '#FFFFFF' ? 'rgba(255,255,255,0.35)' : 'rgba(14,14,14,0.18)' }]} />
+              <Text style={[styles.heroCat, { color: fg }]}>{product.category.toUpperCase()}</Text>
+              {clip ? (
+                <View style={styles.clipChip}>
+                  <Text style={styles.clipChipText}>{paused ? '▶ PLAY' : `● ${clip.label.toUpperCase()}`}</Text>
+                </View>
+              ) : null}
+            </Pressable>
+          );
+        })()}
+        <Reveal index={1} style={styles.pad}>
           <View style={styles.titleRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.brand}>{product.brand}</Text>
@@ -185,18 +220,23 @@ export default function ProductDetail() {
               </ScrollView>
             </>
           ) : null}
-        </View>
+        </Reveal>
       </ScrollView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { width: '100%', aspectRatio: 1, maxHeight: 460 },
+  hero: { width: '100%', aspectRatio: 1, maxHeight: 460, overflow: 'hidden' },
+  heroImg: { position: 'absolute', top: '10%', left: '10%', width: '80%', height: '80%' },
+  ring: { position: 'absolute', width: 300, height: 300, borderRadius: 150, borderWidth: 2, borderStyle: 'dashed', bottom: -110, left: -90 },
+  heroCat: { position: 'absolute', top: 14, left: 16, fontSize: 12, fontWeight: '900', letterSpacing: 1.2 },
+  clipChip: { position: 'absolute', bottom: 14, right: 14, backgroundColor: '#D5FF3F', borderRadius: radius.pill, paddingVertical: 6, paddingHorizontal: 11 },
+  clipChipText: { fontSize: 11, fontWeight: '900', letterSpacing: 0.6, color: colors.ink },
   pad: { padding: space.lg },
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  brand: { fontSize: 18, fontWeight: '700', color: colors.ink },
-  name: { fontSize: 15, color: colors.muted, marginTop: 2 },
+  brand: { fontSize: 12, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase', color: colors.ink },
+  name: { fontSize: 30, lineHeight: 32, fontWeight: '900', letterSpacing: -1.4, color: colors.ink, marginTop: 4 },
   price: { fontSize: 15, marginTop: 8 },
   duo: { flexDirection: 'row', gap: 8, marginTop: 16 },
   duoBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 13, borderRadius: radius.pill },
@@ -205,7 +245,7 @@ const styles = StyleSheet.create({
   perk: { flexDirection: 'row', gap: 12, marginTop: 16, backgroundColor: colors.amberSoft, borderColor: 'transparent' },
   perkTitle: { fontWeight: '700', color: colors.ink, marginBottom: 2 },
   perkBody: { color: colors.ink, lineHeight: 20 },
-  section: { ...type.h2, marginTop: 26, marginBottom: 10 },
+  section: { ...type.display, fontSize: 24, letterSpacing: -1, marginTop: 28, marginBottom: 10 },
   store: { flexDirection: 'row', gap: 12, padding: 14, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, marginBottom: 8 },
   storeName: { fontSize: 15, fontWeight: '600', color: colors.ink },
   exp: { marginTop: 8, fontSize: 13, color: colors.amber, fontWeight: '600' },
