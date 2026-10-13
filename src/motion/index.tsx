@@ -1,15 +1,12 @@
-import { useVideoPlayer, VideoView } from 'expo-video';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
-  Image,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
-  type ImageSourcePropType,
   type LayoutChangeEvent,
   type PressableProps,
   type StyleProp,
@@ -167,49 +164,7 @@ function Dot({ on, color, idle }: { on: boolean; color: string; idle: string }) 
   );
 }
 
-/**
- * Looping, muted product preview (Higgsfield clip). The poster sits underneath until the first
- * frame is ready, so there's never a blank tile; `paused` freezes it on the poster.
- */
-export function PreviewVideo({
-  source,
-  poster,
-  paused,
-  style,
-  testID,
-}: {
-  source: number;
-  poster: ImageSourcePropType;
-  paused?: boolean;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}) {
-  const player = useVideoPlayer(source, (p) => {
-    p.loop = true;
-    p.muted = true;
-    p.play();
-  });
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    const sub = player.addListener('statusChange', ({ status }) => status === 'readyToPlay' && setReady(true));
-    return () => sub.remove();
-  }, [player]);
-  useEffect(() => {
-    paused ? player.pause() : player.play();
-  }, [paused, player]);
-  return (
-    <View style={[{ overflow: 'hidden' }, style]} testID={testID}>
-      <Image source={poster} style={StyleSheet.absoluteFill} resizeMode="cover" accessibilityIgnoresInvertColors />
-      <VideoView
-        player={player}
-        style={[StyleSheet.absoluteFill, { opacity: ready ? 1 : 0 }]}
-        contentFit="cover"
-        nativeControls={false}
-        allowsPictureInPicture={false}
-      />
-    </View>
-  );
-}
+export { PreviewVideo } from './PreviewVideo';
 
 /**
  * A look "develops" like Doji / Alta's try-on: while `pending`, the content is veiled and a

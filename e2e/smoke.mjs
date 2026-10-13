@@ -8,7 +8,7 @@ import { chromium } from 'playwright-core';
 
 const DIST = new URL('../dist/', import.meta.url).pathname;
 const SHOTS = process.argv[2];
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.jpg': 'image/jpeg', '.ttf': 'font/ttf', '.json': 'application/json' };
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.jpg': 'image/jpeg', '.ttf': 'font/ttf', '.json': 'application/json', '.mp4': 'video/mp4', '.webm': 'video/webm' };
 
 const server = createServer(async (req, res) => {
   const raw = decodeURIComponent(new URL(req.url, 'http://x').pathname);
