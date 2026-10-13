@@ -1,22 +1,26 @@
 import { Platform } from 'react-native';
 
 /**
- * LocalPick theme — light editorial look referenced from Alta.
- * White floor, product packshots on pale warm gray, black pills for actions,
- * an italic serif for the occasional accent word. Green and amber stay reserved for stock/status.
+ * LocalPick theme, version A "Atelier": the luxury-house read of the Alta layout, after Doji,
+ * SSENSE and Zara. Warm ivory floor, packshots on pale warm gray, ink pills, a serif for names
+ * and headlines, tracked uppercase micro-labels. Green and amber stay reserved for stock/status.
  */
 export const colors = {
-  bg: '#FFFFFF',
+  bg: '#FAF8F4',
   /** Pale warm gray the product photos are shot on; tiles use it so packshots sit seamlessly. */
   tile: '#ECEBE7',
-  surface: '#F5F4F1',
+  surface: '#F3F0EA',
   card: '#FFFFFF',
-  raised: '#F0EFEC',
-  glass: 'rgba(255,255,255,0.96)',
+  /** Ivory veil laid over a look while it develops. */
+  veil: 'rgba(250,248,244,0.82)',
+  raised: '#EFEBE4',
+  glass: 'rgba(250,248,244,0.96)',
   ink: '#0E0E0E',
   muted: '#8B8A85',
   faint: '#BDBCB7',
-  border: '#E6E5E1',
+  border: '#E4DFD6',
+  /** Gold used once per screen: the 360° chip and the live dot. */
+  gold: '#A8853F',
   /** Primary action colour: black pills with white text. */
   accent: '#0E0E0E',
   accentSoft: 'rgba(14,14,14,0.06)',
@@ -46,7 +50,11 @@ export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 };
 export const TABBAR_SPACE = 104;
 
 export const type = {
-  title: { fontSize: 30, fontWeight: '700' as const, color: colors.ink, letterSpacing: -0.8 },
+  title: { fontFamily: fonts.serif, fontSize: 32, fontWeight: '400' as const, color: colors.ink, letterSpacing: -0.6 },
+  /** Serif display for headlines and product names. */
+  display: { fontFamily: fonts.serif, fontWeight: '400' as const, color: colors.ink, letterSpacing: -0.3 },
+  /** Tracked uppercase micro-label, SSENSE-style. */
+  overline: { fontSize: 10.5, fontWeight: '600' as const, letterSpacing: 1.6, textTransform: 'uppercase' as const, color: colors.muted },
   h2: { fontSize: 18, fontWeight: '600' as const, color: colors.ink, letterSpacing: -0.2 },
   body: { fontSize: 15, color: colors.ink },
   small: { fontSize: 13, color: colors.muted },

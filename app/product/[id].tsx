@@ -9,8 +9,10 @@ import { formatDistance } from '../../src/lib/geo';
 import { availabilityFor, withinRadius } from '../../src/lib/inventory';
 import { isOpenNow } from '../../src/lib/pickup';
 import { useApp } from '../../src/state/AppState';
-import { colors, money, radius, space, type } from '../../src/theme';
+import { colors, fonts, money, radius, space, type } from '../../src/theme';
 import { productImage } from '../../src/data/productImages';
+import { productClip } from '../../src/data/productClips';
+import { PreviewVideo, Reveal } from '../../src/motion';
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -18,6 +20,8 @@ export default function ProductDetail() {
   const { place, radiusMi, unit, setRadiusMi, addToCart, wished, toggleWishlist, owns, setOwned } = useApp();
   const [chosen, setChosen] = useState<string | undefined>();
   const [added, setAdded] = useState<string | null>(null);
+  const [paused, setPaused] = useState(false);
+  const clip = product ? productClip(product.id) : undefined;
 
   const all = useMemo(() => (product ? availabilityFor(product, place.coord) : []), [product, place]);
   const nearby = useMemo(() => withinRadius(all, radiusMi), [all, radiusMi]);
@@ -47,8 +51,18 @@ export default function ProductDetail() {
     <>
       <Stack.Screen options={{ title: product.category }} />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <ProductPhoto image={productImage(product.id)} emoji={product.emoji} tint={product.tint} emojiSize={132} style={styles.hero} />
-        <View style={styles.pad}>
+        {clip ? (
+          <Pressable testID="clip-toggle" accessibilityRole="button" accessibilityLabel={paused ? 'Play preview' : 'Pause preview'} onPress={() => setPaused((p) => !p)}>
+            <PreviewVideo testID="product-clip" source={clip.video} webm={clip.webm} poster={clip.poster} paused={paused} style={styles.hero} />
+            <View style={styles.clipChip}>
+              <Ionicons name={paused ? 'play' : 'sync-outline'} size={12} color={colors.ink} />
+              <Text style={styles.clipChipText}>{paused ? 'PLAY' : `${clip.label} PREVIEW`}</Text>
+            </View>
+          </Pressable>
+        ) : (
+          <ProductPhoto image={productImage(product.id)} emoji={product.emoji} tint={product.tint} emojiSize={132} style={styles.hero} />
+        )}
+        <Reveal index={1} style={styles.pad}>
           <View style={styles.titleRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.brand}>{product.brand}</Text>
@@ -185,7 +199,7 @@ export default function ProductDetail() {
               </ScrollView>
             </>
           ) : null}
-        </View>
+        </Reveal>
       </ScrollView>
     </>
   );
@@ -195,8 +209,10 @@ const styles = StyleSheet.create({
   hero: { width: '100%', aspectRatio: 1, maxHeight: 460 },
   pad: { padding: space.lg },
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  brand: { fontSize: 18, fontWeight: '700', color: colors.ink },
-  name: { fontSize: 15, color: colors.muted, marginTop: 2 },
+  brand: { fontSize: 11, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase', color: colors.ink },
+  name: { fontFamily: fonts.serif, fontSize: 26, color: colors.ink, letterSpacing: -0.4, marginTop: 4 },
+  clipChip: { position: 'absolute', bottom: 14, left: 14, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.glass, borderRadius: radius.pill, paddingVertical: 6, paddingHorizontal: 11 },
+  clipChipText: { fontSize: 10.5, fontWeight: '700', letterSpacing: 1.4, color: colors.ink },
   price: { fontSize: 15, marginTop: 8 },
   duo: { flexDirection: 'row', gap: 8, marginTop: 16 },
   duoBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 13, borderRadius: radius.pill },
@@ -205,7 +221,7 @@ const styles = StyleSheet.create({
   perk: { flexDirection: 'row', gap: 12, marginTop: 16, backgroundColor: colors.amberSoft, borderColor: 'transparent' },
   perkTitle: { fontWeight: '700', color: colors.ink, marginBottom: 2 },
   perkBody: { color: colors.ink, lineHeight: 20 },
-  section: { ...type.h2, marginTop: 26, marginBottom: 10 },
+  section: { ...type.display, fontSize: 21, marginTop: 28, marginBottom: 10 },
   store: { flexDirection: 'row', gap: 12, padding: 14, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, marginBottom: 8 },
   storeName: { fontSize: 15, fontWeight: '600', color: colors.ink },
   exp: { marginTop: 8, fontSize: 13, color: colors.amber, fontWeight: '600' },

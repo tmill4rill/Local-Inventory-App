@@ -203,9 +203,9 @@ export default function Shop() {
       }
       columnWrapperStyle={{ gap: columns === 3 ? 6 : 10, paddingHorizontal: space.lg }}
       contentContainerStyle={{ gap: columns === 3 ? 14 : 22, paddingBottom: TABBAR_SPACE + insets.bottom + 16 }}
-      renderItem={({ item }) => (
+      renderItem={({ item, index }) => (
         <View style={{ flex: 1 / columns }}>
-          <ProductCard listing={item} unit={unit} dense={columns === 3} />
+          <ProductCard listing={item} unit={unit} dense={columns === 3} index={index} />
         </View>
       )}
       keyboardShouldPersistTaps="handled"
